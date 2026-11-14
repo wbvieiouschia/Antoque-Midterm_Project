@@ -19,10 +19,14 @@ class Supabase
 
         $this->headers = [
             'apikey: ' . $this->anonKey,
-            'Authorization: Bearer ' . $this->anonKey,
             'Content-Type: application/json',
             'Prefer: return=representation',
         ];
+        // Legacy anon keys are JWTs and are also sent as a Bearer token.
+        // New publishable keys (sb_publishable_...) are not JWTs, so they go in the apikey header only.
+        if (strpos($this->anonKey, 'sb_') !== 0) {
+            $this->headers[] = 'Authorization: Bearer ' . $this->anonKey;
+        }
     }
 
     /**
