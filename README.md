@@ -1,8 +1,5 @@
 # AP3 — Sprout Scout
-
-*Watch your fields grow.* An Agriculture Information System.
-
-**Database:** Supabase PostgreSQL  |  **Application:** PHP + Tailwind CSS
+An Agriculture Information System.
 
 A web-based Agriculture Information System demonstrating database normalization,
 relational design, secure data management, CRUD operations, reporting, and
