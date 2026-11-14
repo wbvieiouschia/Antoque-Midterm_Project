@@ -36,68 +36,124 @@ $totalHarvest = $harvestModel->totalQuantity();
 
 $pageTitle = 'Dashboard';
 ?>
-<h1 class="text-2xl font-bold text-gray-800 mb-6 fade-in">Dashboard</h1>
+<h1 class="text-2xl font-bold text-gray-800 mb-6 fade-in">Hello, <?php echo htmlspecialchars(currentUser()['name'] ?? 'there'); ?></h1>
 
 <!-- Summary Cards -->
-<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4 fade-in">
-    <div class="bg-white px-4 py-3 rounded-lg border border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs text-gray-500 uppercase font-semibold">Total Farmers</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-0.5"><?php echo number_format($counts['farmers']); ?></h3>
-            </div>
-        </div>
+<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8 fade-in">
+    <div class="bg-white px-5 py-4 rounded-lg border border-gray-200 text-center">
+        <h3 class="text-3xl font-bold text-gray-900"><?php echo number_format($counts['farmers']); ?></h3>
+        <p class="text-sm text-gray-500 uppercase font-semibold mt-1">Total Farmers</p>
     </div>
-    <div class="bg-white px-4 py-3 rounded-lg border border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs text-gray-500 uppercase font-semibold">Total Farms</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-0.5"><?php echo number_format($counts['farms']); ?></h3>
-            </div>
-        </div>
+    <div class="bg-white px-5 py-4 rounded-lg border border-gray-200 text-center">
+        <h3 class="text-3xl font-bold text-gray-900"><?php echo number_format($counts['farms']); ?></h3>
+        <p class="text-sm text-gray-500 uppercase font-semibold mt-1">Total Farms</p>
     </div>
-    <div class="bg-white px-4 py-3 rounded-lg border border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs text-gray-500 uppercase font-semibold">Total Crops</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-0.5"><?php echo number_format($counts['crops']); ?></h3>
-            </div>
-        </div>
+    <div class="bg-white px-5 py-4 rounded-lg border border-gray-200 text-center">
+        <h3 class="text-3xl font-bold text-gray-900"><?php echo number_format($counts['crops']); ?></h3>
+        <p class="text-sm text-gray-500 uppercase font-semibold mt-1">Total Crops</p>
     </div>
-    <div class="bg-white px-4 py-3 rounded-lg border border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs text-gray-500 uppercase font-semibold">Total Plantings</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-0.5"><?php echo number_format($counts['planting']); ?></h3>
-            </div>
-        </div>
-    </div>
-    <div class="bg-white px-4 py-3 rounded-lg border border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs text-gray-500 uppercase font-semibold">Total Harvests</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-0.5"><?php echo number_format($counts['harvest']); ?></h3>
-            </div>
-        </div>
+    <div class="bg-white px-5 py-4 rounded-lg border border-gray-200 text-center">
+        <h3 class="text-3xl font-bold text-gray-900"><?php echo number_format($counts['harvest']); ?></h3>
+        <p class="text-sm text-gray-500 uppercase font-semibold mt-1">Total Harvests</p>
     </div>
 </div>
 
-<!-- Harvest totals -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 fade-in">
-    <div class="bg-white px-4 py-3 rounded-lg border border-gray-200">
-        <p class="text-xs text-gray-500 uppercase font-semibold">Total Harvested Quantity</p>
-        <h2 class="text-2xl font-bold text-gray-900 mt-0.5"><?php echo number_format($totalHarvest, 2); ?> kg</h2>
+<!-- Three columns: harvest totals + lists + plantings by status -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 fade-in">
+    <!-- Column 1: total harvested quantity + recently harvested by farmer -->
+    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200">
+            <p class="text-xs text-gray-500 uppercase font-semibold">Total Harvested Quantity</p>
+            <h2 class="text-2xl font-bold text-gray-900 mt-0.5"><?php echo number_format($totalHarvest, 2); ?> kg</h2>
+        </div>
+        <div class="p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">Recently Harvested</h3>
+            <?php
+            $recentHarvests = $harvestModel->all([], ['limit' => 5, 'order' => 'harvest_id.desc']);
+            $allPlantings3 = $plantingModel->all();
+            $allFarms3 = $farmModel->all();
+            $farmFarmer3 = [];
+            foreach ($allFarms3 as $f) {
+                $farmFarmer3[$f['farm_id']] = trim(($f['farmer']['first_name'] ?? '') . ' ' . ($f['farmer']['last_name'] ?? ''));
+            }
+            $plantingFarmer3 = [];
+            foreach ($allPlantings3 as $p) {
+                $plantingFarmer3[$p['planting_id']] = $farmFarmer3[$p['farm_id'] ?? 0] ?? 'Unknown';
+            }
+            ?>
+            <?php if (empty($recentHarvests)): ?>
+                <p class="text-gray-500 text-sm">No harvest records yet.</p>
+            <?php else: ?>
+                <ul class="space-y-2 text-sm">
+                    <?php foreach ($recentHarvests as $h):
+                        $pid = $h['planting']['planting_id'] ?? 0;
+                        $farmerName = $plantingFarmer3[$pid] ?? 'Unknown';
+                        if ($farmerName === '') {
+                            $farmerName = 'Unknown';
+                        }
+                        $cropName = $h['planting']['crop']['crop_name'] ?? '—';
+                        $qty = (float) ($h['quantity_kg'] ?? 0);
+                    ?>
+                    <li class="text-sm">
+                        <div class="grid grid-cols-3 items-center gap-2">
+                            <span class="text-gray-700 truncate"><?php echo htmlspecialchars($farmerName); ?></span>
+                            <span class="text-center text-xs text-gray-500 truncate"><?php echo htmlspecialchars($cropName); ?></span>
+                            <span class="text-right font-semibold text-gray-900"><?php echo number_format($qty, 2); ?> kg</span>
+                        </div>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
     </div>
-    <div class="bg-white px-4 py-3 rounded-lg border border-gray-200">
-        <p class="text-xs text-gray-500 uppercase font-semibold">Estimated Harvest Value</p>
-        <h2 class="text-2xl font-bold text-gray-900 mt-0.5">₱ <?php echo number_format($totalHarvest * 25, 2); ?></h2>
-    </div>
-</div>
 
-<!-- Plantings by status -->
-<div class="mb-8 fade-in">
-    <div class="bg-white p-6 rounded-lg border border-gray-200">
-        <h3 class="font-semibold text-gray-800 mb-4">Plantings by status</h3>
+    <!-- Column 2: estimated harvest value + biggest value by farmer -->
+    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200">
+            <p class="text-xs text-gray-500 uppercase font-semibold">Estimated Harvest Value</p>
+            <h2 class="text-2xl font-bold text-gray-900 mt-0.5">₱ <?php echo number_format($totalHarvest * 25, 2); ?></h2>
+        </div>
+        <div class="p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">Biggest Harvest Value</h3>
+            <?php
+            $allHarvests3 = $harvestModel->all();
+            $farmerValue3 = [];
+            foreach ($allHarvests3 as $h) {
+                $pid = $h['planting']['planting_id'] ?? 0;
+                $name = $plantingFarmer3[$pid] ?? 'Unknown';
+                if ($name === '') {
+                    $name = 'Unknown';
+                }
+                $qty = (float) ($h['quantity_kg'] ?? 0);
+                $price = (float) ($h['selling_price_per_kg'] ?? 0);
+                $farmerValue3[$name] = ($farmerValue3[$name] ?? 0) + ($qty * $price);
+            }
+            arsort($farmerValue3);
+            $topValues3 = array_slice($farmerValue3, 0, 5, true);
+            ?>
+            <?php if (empty($topValues3)): ?>
+                <p class="text-gray-500 text-sm">No harvest records yet.</p>
+            <?php else: ?>
+                <ul class="space-y-2 text-sm">
+                    <?php foreach ($topValues3 as $name => $val): ?>
+                    <li class="flex justify-between gap-2">
+                        <span class="text-gray-700 truncate"><?php echo htmlspecialchars($name); ?></span>
+                        <span class="font-semibold text-gray-900">₱ <?php echo number_format($val, 2); ?></span>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Column 3: total plantings + plantings by status -->
+    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200">
+            <p class="text-xs text-gray-500 uppercase font-semibold">Total Plantings</p>
+            <h2 class="text-2xl font-bold text-gray-900 mt-0.5"><?php echo number_format($counts['planting']); ?></h2>
+        </div>
+        <div class="p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">Plantings by status</h3>
         <?php
         $statusCounts = [];
         foreach ($plantingStatus as $r) {
@@ -119,6 +175,7 @@ $pageTitle = 'Dashboard';
                     <span class="w-8 text-right font-semibold text-gray-900"><?php echo $n; ?></span>
                 </div>
             <?php endforeach; ?>
+        </div>
         </div>
     </div>
 </div>

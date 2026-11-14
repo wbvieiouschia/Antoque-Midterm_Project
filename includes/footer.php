@@ -22,5 +22,17 @@
         });
     });
 </script>
+<script>
+    (function () {
+        var btn = document.getElementById('mobileMenuToggle');
+        var menu = document.getElementById('mobileMenu');
+        if (btn && menu) {
+            btn.addEventListener('click', function () {
+                menu.classList.toggle('hidden');
+                btn.setAttribute('aria-expanded', String(!menu.classList.contains('hidden')));
+            });
+        }
+    })();
+</script>
 </body>
 </html>

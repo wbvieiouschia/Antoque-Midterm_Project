@@ -113,18 +113,36 @@ $flashConfig = [
                         <span class="w-7 h-7 rounded-full bg-[#f2c14e] flex items-center justify-center text-xs font-bold text-[#3b2f33]">
                             <?php echo strtoupper(substr(currentUser()['name'] ?? 'U', 0, 1)); ?>
                         </span>
-                        <span class="hidden lg:inline"><?php echo htmlspecialchars(
-                            currentUser()['name'] ?? '',
-                        ); ?></span>
-                        <span class="text-xs font-medium uppercase text-white/60"><?php echo htmlspecialchars(
-                            currentUser()['role'] ?? '',
-                        ); ?></span>
+                        <span class="flex flex-col leading-tight">
+                            <span class="hidden lg:inline"><?php echo htmlspecialchars(
+                                currentUser()['name'] ?? '',
+                            ); ?></span>
+                            <span class="text-xs font-medium uppercase text-white/60"><?php echo htmlspecialchars(
+                                currentUser()['role'] ?? '',
+                            ); ?></span>
+                        </span>
                     </span>
+                    <button type="button" id="mobileMenuToggle" class="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-md text-white/90 hover:bg-white/10 transition-colors" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mobileMenu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
                     <a href="/logout.php" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white/90 hover:text-[#3b2f33] hover:bg-[#f2c14e] rounded-md transition-colors">
                         <i class="fa-solid fa-right-from-bracket"></i>
                         <span class="hidden sm:inline">Logout</span>
                     </a>
                 </div>
+            </div>
+            <div id="mobileMenu" class="md:hidden hidden pb-4">
+                <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
+                    <a href="/index.php" class="<?php echo $navClass('dashboard'); ?> block">Dashboard</a>
+                    <a href="/pages/farmers.php" class="<?php echo $navClass('farmers'); ?> block">Farmers</a>
+                    <a href="/pages/farms.php" class="<?php echo $navClass('farms'); ?> block">Farms</a>
+                    <a href="/pages/crops.php" class="<?php echo $navClass('crops'); ?> block">Crops</a>
+                    <a href="/pages/planting.php" class="<?php echo $navClass('planting'); ?> block">Planting</a>
+                    <a href="/pages/harvest.php" class="<?php echo $navClass('harvest'); ?> block">Harvest</a>
+                    <?php if (isAdmin()): ?>
+                        <a href="/pages/reports.php" class="<?php echo $navClass('reports'); ?> block">Reports</a>
+                    <?php endif; ?>
+                </nav>
             </div>
         </div>
     </header>
