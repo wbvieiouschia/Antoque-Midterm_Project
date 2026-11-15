@@ -284,19 +284,19 @@ CREATE POLICY "Allow public delete" ON public.planting FOR DELETE USING (true);
 CREATE POLICY "Allow public delete" ON public.harvest FOR DELETE USING (true);
 
 -- Fix identity sequences after explicit ID inserts
-SELECT setval('public.farmer_farmer_id_seq', (SELECT COALESCE(MAX(farmer_id), 1) FROM public.farmer));
-SELECT setval('public.farm_farm_id_seq', (SELECT COALESCE(MAX(farm_id), 1) FROM public.farm));
-SELECT setval('public.crop_crop_id_seq', (SELECT COALESCE(MAX(crop_id), 1) FROM public.crop));
-SELECT setval('public.planting_planting_id_seq', (SELECT COALESCE(MAX(planting_id), 1) FROM public.planting));
-SELECT setval('public.harvest_harvest_id_seq', (SELECT COALESCE(MAX(harvest_id), 1) FROM public.harvest));
-SELECT setval('public.soil_type_soil_type_id_seq', (SELECT COALESCE(MAX(soil_type_id), 1) FROM public.soil_type));
-SELECT setval('public.irrigation_type_irrigation_type_id_seq', (SELECT COALESCE(MAX(irrigation_type_id), 1) FROM public.irrigation_type));
-SELECT setval('public.crop_category_crop_category_id_seq', (SELECT COALESCE(MAX(crop_category_id), 1) FROM public.crop_category));
-SELECT setval('public.season_season_id_seq', (SELECT COALESCE(MAX(season_id), 1) FROM public.season));
-SELECT setval('public.planting_status_planting_status_id_seq', (SELECT COALESCE(MAX(planting_status_id), 1) FROM public.planting_status));
-SELECT setval('public.quality_grade_quality_grade_id_seq', (SELECT COALESCE(MAX(quality_grade_id), 1) FROM public.quality_grade));
-SELECT setval('public.harvest_remarks_remark_id_seq', (SELECT COALESCE(MAX(remark_id), 1) FROM public.harvest_remarks));
-SELECT setval('public.app_user_user_id_seq', (SELECT COALESCE(MAX(user_id), 1) FROM public.app_user));
+SELECT setval(pg_get_serial_sequence('public.farmer','farmer_id'), (SELECT COALESCE(MAX(farmer_id), 1) FROM public.farmer));
+SELECT setval(pg_get_serial_sequence('public.farm','farm_id'), (SELECT COALESCE(MAX(farm_id), 1) FROM public.farm));
+SELECT setval(pg_get_serial_sequence('public.crop','crop_id'), (SELECT COALESCE(MAX(crop_id), 1) FROM public.crop));
+SELECT setval(pg_get_serial_sequence('public.planting','planting_id'), (SELECT COALESCE(MAX(planting_id), 1) FROM public.planting));
+SELECT setval(pg_get_serial_sequence('public.harvest','harvest_id'), (SELECT COALESCE(MAX(harvest_id), 1) FROM public.harvest));
+SELECT setval(pg_get_serial_sequence('public.soil_type','soil_type_id'), (SELECT COALESCE(MAX(soil_type_id), 1) FROM public.soil_type));
+SELECT setval(pg_get_serial_sequence('public.irrigation_type','irrigation_type_id'), (SELECT COALESCE(MAX(irrigation_type_id), 1) FROM public.irrigation_type));
+SELECT setval(pg_get_serial_sequence('public.crop_category','crop_category_id'), (SELECT COALESCE(MAX(crop_category_id), 1) FROM public.crop_category));
+SELECT setval(pg_get_serial_sequence('public.season','season_id'), (SELECT COALESCE(MAX(season_id), 1) FROM public.season));
+SELECT setval(pg_get_serial_sequence('public.planting_status','planting_status_id'), (SELECT COALESCE(MAX(planting_status_id), 1) FROM public.planting_status));
+SELECT setval(pg_get_serial_sequence('public.quality_grade','quality_grade_id'), (SELECT COALESCE(MAX(quality_grade_id), 1) FROM public.quality_grade));
+SELECT setval(pg_get_serial_sequence('public.harvest_remarks','remark_id'), (SELECT COALESCE(MAX(remark_id), 1) FROM public.harvest_remarks));
+SELECT setval(pg_get_serial_sequence('public.app_user','user_id'), (SELECT COALESCE(MAX(user_id), 1) FROM public.app_user));
 
 ALTER TABLE public.app_user ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access" ON public.app_user FOR SELECT USING (true);
