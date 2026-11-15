@@ -219,7 +219,7 @@ if ($action === 'edit' && $id > 0) {
                                 $r['address'] ?? '—',
                             ); ?></td>
                             <td class="px-6 py-3 text-gray-700"><?php echo e($r['date_registered'] ?? '—'); ?></td>
-                            <td class="px-6 py-3 text-right">
+                            <td class="px-6 py-3 text-right whitespace-nowrap">
                                 <a href="index.php?action=edit&id=<?php echo $r[
                                     'farmer_id'
                                 ]; ?>" class="text-blue-600 hover:underline text-sm">Edit</a>

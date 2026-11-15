@@ -43,19 +43,19 @@ $pageTitle = 'Dashboard';
 <!-- Summary Cards -->
 <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8 fade-in">
     <div class="bg-white px-5 py-4 rounded-lg border border-gray-200 text-center">
-        <h3 class="text-3xl font-bold text-gray-900"><?php echo number_format($counts['farmers']); ?></h3>
+        <h3 class="text-3xl font-bold text-[#4f7a3a]"><?php echo number_format($counts['farmers']); ?></h3>
         <p class="text-sm text-gray-500 uppercase font-semibold mt-1">Total Farmers</p>
     </div>
     <div class="bg-white px-5 py-4 rounded-lg border border-gray-200 text-center">
-        <h3 class="text-3xl font-bold text-gray-900"><?php echo number_format($counts['farms']); ?></h3>
+        <h3 class="text-3xl font-bold text-[#4f7a3a]"><?php echo number_format($counts['farms']); ?></h3>
         <p class="text-sm text-gray-500 uppercase font-semibold mt-1">Total Farms</p>
     </div>
     <div class="bg-white px-5 py-4 rounded-lg border border-gray-200 text-center">
-        <h3 class="text-3xl font-bold text-gray-900"><?php echo number_format($counts['crops']); ?></h3>
+        <h3 class="text-3xl font-bold text-[#4f7a3a]"><?php echo number_format($counts['crops']); ?></h3>
         <p class="text-sm text-gray-500 uppercase font-semibold mt-1">Total Crops</p>
     </div>
     <div class="bg-white px-5 py-4 rounded-lg border border-gray-200 text-center">
-        <h3 class="text-3xl font-bold text-gray-900"><?php echo number_format($counts['harvest']); ?></h3>
+        <h3 class="text-3xl font-bold text-[#4f7a3a]"><?php echo number_format($counts['harvest']); ?></h3>
         <p class="text-sm text-gray-500 uppercase font-semibold mt-1">Total Harvests</p>
     </div>
 </div>
@@ -66,7 +66,7 @@ $pageTitle = 'Dashboard';
     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div class="px-4 py-3 border-b border-gray-200">
             <p class="text-xs text-gray-500 uppercase font-semibold">Total Harvested Quantity</p>
-            <h2 class="text-2xl font-bold text-gray-900 mt-0.5"><?php echo number_format($totalHarvest, 2); ?> kg</h2>
+            <h2 class="text-2xl font-bold text-[#d4a017] mt-0.5"><?php echo number_format($totalHarvest, 2); ?> kg</h2>
         </div>
         <div class="p-6">
             <h3 class="font-semibold text-gray-800 mb-4">Recently Harvested</h3>
@@ -113,7 +113,7 @@ $pageTitle = 'Dashboard';
     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div class="px-4 py-3 border-b border-gray-200">
             <p class="text-xs text-gray-500 uppercase font-semibold">Estimated Harvest Value</p>
-            <h2 class="text-2xl font-bold text-gray-900 mt-0.5">₱ <?php echo number_format($totalHarvestValue, 2); ?></h2>
+            <h2 class="text-2xl font-bold text-[#d4a017] mt-0.5">₱ <?php echo number_format($totalHarvestValue, 2); ?></h2>
         </div>
         <div class="p-6">
             <h3 class="font-semibold text-gray-800 mb-4">Biggest Harvest Value</h3>
@@ -152,7 +152,7 @@ $pageTitle = 'Dashboard';
     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div class="px-4 py-3 border-b border-gray-200">
             <p class="text-xs text-gray-500 uppercase font-semibold">Total Plantings</p>
-            <h2 class="text-2xl font-bold text-gray-900 mt-0.5"><?php echo number_format($counts['planting']); ?></h2>
+            <h2 class="text-2xl font-bold text-[#d4a017] mt-0.5"><?php echo number_format($counts['planting']); ?></h2>
         </div>
         <div class="p-6">
             <h3 class="font-semibold text-gray-800 mb-4">Plantings by status</h3>

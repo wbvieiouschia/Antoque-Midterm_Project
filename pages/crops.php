@@ -321,7 +321,7 @@ $seasonOptions = ['Wet Season', 'Dry Season', 'Year Round'];
                             <td class="px-6 py-3 text-gray-700"><?php echo e($r['crop_category']['category_name'] ?? '—'); ?></td>
                             <td class="px-6 py-3 text-gray-700"><?php echo $r['growing_period_days']; ?> days</td>
                             <td class="px-6 py-3 text-gray-700"><?php echo e($r['season']['season_name'] ?? '—'); ?></td>
-                            <td class="px-6 py-3 text-right">
+                            <td class="px-6 py-3 text-right whitespace-nowrap">
                                 <a href="crops.php?action=view&id=<?php echo $r['crop_id']; ?>" class="px-2.5 py-1 border border-gray-300 rounded text-xs font-medium text-gray-700 hover:bg-gray-50 mr-3">View</a>
                                 <a href="crops.php?action=edit&id=<?php echo $r[
                                     'crop_id'

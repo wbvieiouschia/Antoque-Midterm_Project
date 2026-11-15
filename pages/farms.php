@@ -341,7 +341,7 @@ $irrOptions = ['Rainfed', 'Irrigated', 'Drip Irrigation'];
                             ); ?></td>
                             <td class="px-6 py-3 text-gray-700"><?php echo e($r['soil_type']['soil_type_name'] ?? '—'); ?></td>
                             <td class="px-6 py-3 text-gray-700"><?php echo e($r['irrigation_type']['irrigation_type_name'] ?? '—'); ?></td>
-                            <td class="px-6 py-3 text-right">
+                            <td class="px-6 py-3 text-right whitespace-nowrap">
                                 <a href="farms.php?action=view&id=<?php echo $r['farm_id']; ?>" class="px-2.5 py-1 border border-gray-300 rounded text-xs font-medium text-gray-700 hover:bg-gray-50 mr-3">View</a>
                                 <a href="farms.php?action=edit&id=<?php echo $r[
                                     'farm_id'

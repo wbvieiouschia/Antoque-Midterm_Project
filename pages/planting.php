@@ -384,7 +384,7 @@ $statusOptions = $plantingStatuses;
                                     <?php echo e($r['planting_status']['status_name'] ?? ''); ?>
                                 </span>
                             </td>
-                            <td class="px-6 py-3 text-right">
+                            <td class="px-6 py-3 text-right whitespace-nowrap">
                                 <a href="planting.php?action=view&id=<?php echo $r['planting_id']; ?>" class="px-2.5 py-1 border border-gray-300 rounded text-xs font-medium text-gray-700 hover:bg-gray-50 mr-3">View</a>
                                 <a href="planting.php?action=edit&id=<?php echo $r[
                                     'planting_id'

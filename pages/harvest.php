@@ -354,7 +354,7 @@ $pl['planting_id']
                                 $r['quantity_kg'] * $r['selling_price_per_kg'],
                                 2,
                             ); ?></td>
-                            <td class="px-6 py-3 text-right">
+                            <td class="px-6 py-3 text-right whitespace-nowrap">
                                 <a href="harvest.php?action=view&id=<?php echo $r['harvest_id']; ?>" class="px-2.5 py-1 border border-gray-300 rounded text-xs font-medium text-gray-700 hover:bg-gray-50 mr-3">View</a>
                                 <a href="harvest.php?action=edit&id=<?php echo $r[
                                     'harvest_id'
