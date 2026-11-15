@@ -158,7 +158,8 @@ $pageTitle = 'Dashboard';
         <?php
         $statusCounts = [];
         foreach ($plantingStatus as $r) {
-            $statusCounts[$r['status']] = (int) $r['count'];
+            $statusName = $r['status'] ?? $r['planting_status']['status_name'] ?? 'Unknown';
+            $statusCounts[$statusName] = (int) $r['count'];
         }
         $statusList = PLANTING_STATUSES;
         $maxStatus = max(1, ...array_map(fn($st) => $statusCounts[$st] ?? 0, $statusList));
