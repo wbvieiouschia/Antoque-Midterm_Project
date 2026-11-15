@@ -157,9 +157,9 @@ $pageTitle = 'Dashboard';
             <h3 class="font-semibold text-gray-800 mb-4">Plantings by status</h3>
         <?php
         $statusCounts = [];
-        foreach ($plantingStatus as $r) {
-            $statusName = $r['status'] ?? $r['planting_status']['status_name'] ?? 'Unknown';
-            $statusCounts[$statusName] = (int) $r['count'];
+        foreach ($plantingModel->all() as $r) {
+            $statusName = $r['planting_status']['status_name'] ?? 'Unknown';
+            $statusCounts[$statusName] = ($statusCounts[$statusName] ?? 0) + 1;
         }
         $statusList = PLANTING_STATUSES;
         $maxStatus = max(1, ...array_map(fn($st) => $statusCounts[$st] ?? 0, $statusList));
