@@ -1,7 +1,8 @@
 <?php
+require_once __DIR__ . '/../includes/auth.php';
+requireAuth();
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/crud.php';
-requireAuth();
 
 $db = new Database();
 $harvestModel = new Harvest($db);

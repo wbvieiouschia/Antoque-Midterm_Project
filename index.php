@@ -1,6 +1,7 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/auth.php';
 requireAuth();
+require_once __DIR__ . '/includes/header.php';
 
 $db = new Database();
 $farmerModel = new Farmer($db);
