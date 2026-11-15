@@ -44,6 +44,9 @@ class Database {
         }
     }
 
+    private function hasAudit(string $table): bool {
+        return in_array($table, ['farmer', 'farm', 'crop', 'planting', 'harvest'], true);
+    }
     public function getDriver(): string { return $this->driver; }
     private function isSupabase(): bool { return $this->driver === 'supabase'; }
 
@@ -381,7 +384,25 @@ class Database {
     }
 
     public function insert(string $table, array $data) {
-        if ($this->isSupabase()) return $this->supabase->insert($table, $data);
+        if ($this->hasAudit($table)) {
+            $user = $_SESSION['user_name'] ?? null;
+            if ($user !== null) {
+                if (!isset($data['created_by'])) {
+                    $data['created_by'] = $user;
+                }
+                if (!isset($data['updated_by'])) {
+                    $data['updated_by'] = $user;
+                }
+            }
+        }
+        if ($this->isSupabase()) {
+            if ($this->hasAudit($table)) {
+                if (!isset($data['updated_at'])) {
+                    $data['updated_at'] = date('c');
+                }
+            }
+            return $this->supabase->insert($table, $data);
+        }
         $cols = implode(', ', array_keys($data));
         $placeholders = implode(', ', array_fill(0, count($data), '?'));
         $stmt = $this->pdo->prepare("INSERT INTO $table ($cols) VALUES ($placeholders)");
@@ -394,9 +415,21 @@ class Database {
     }
 
     public function update(string $table, array $data, array $filters) {
+        if ($this->hasAudit($table)) {
+            $user = $_SESSION['user_name'] ?? null;
+            if ($user !== null && !isset($data['updated_by'])) {
+                $data['updated_by'] = $user;
+            }
+            if ($this->isSupabase() && !isset($data['updated_at'])) {
+                $data['updated_at'] = date('c');
+            }
+        }
         if ($this->isSupabase()) return $this->supabase->update($table, $data, $filters);
         $set = []; $params = [];
         foreach ($data as $col => $val) { $set[] = "$col = ?"; $params[] = $val; }
+        if ($this->hasAudit($table) && !isset($data['updated_at'])) {
+            $set[] = "updated_at = datetime('now')";
+        }
         $sql = "UPDATE $table SET " . implode(', ', $set);
         $where = [];
         foreach ($filters as $f) {

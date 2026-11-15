@@ -44,8 +44,8 @@ class CrudWorkflowTest extends TestCase {
             'farm_name' => 'Test Farm',
             'location' => 'Test Location',
             'area_hectares' => 2.5,
-            'soil_type' => 'Loam',
-            'irrigation_type' => 'Rainfed',
+            'soil_type_id' => 1,
+            'irrigation_type_id' => 1,
         ]);
         $this->assertIsArray($farm);
         $this->assertArrayHasKey('farm_id', $farm);
@@ -68,7 +68,7 @@ class CrudWorkflowTest extends TestCase {
             'area_planted' => 1.0,
             'seed_quantity' => 20.0,
             'expected_harvest_date' => '2026-09-01',
-            'status' => 'Growing',
+            'planting_status_id' => 3,
         ]);
         $this->assertIsArray($planting);
         $this->assertArrayHasKey('planting_id', $planting);
@@ -89,7 +89,7 @@ class CrudWorkflowTest extends TestCase {
             'harvest_date' => '2026-06-15',
             'quantity_kg' => 500.0,
             'selling_price_per_kg' => 25.0,
-            'quality_grade' => 'Grade A',
+            'quality_grade_id' => 1,
             'remark_id' => 1,
             'remarks' => 'Test harvest',
         ]);
@@ -99,7 +99,7 @@ class CrudWorkflowTest extends TestCase {
         // Verify
         $found = $this->db->find('harvest', $harvest['harvest_id'], 'harvest_id');
         $this->assertEquals(500.0, (float)$found['quantity_kg']);
-        $this->assertEquals('Grade A', $found['quality_grade']);
+        $this->assertEquals(1, (int) $found['quality_grade_id']);
 
         // Cleanup
         $this->db->delete('harvest', ['harvest_id=eq.' . $harvest['harvest_id']]);
@@ -119,8 +119,8 @@ class CrudWorkflowTest extends TestCase {
             'farm_name' => 'Ref Test Farm',
             'location' => 'Test',
             'area_hectares' => 1.0,
-            'soil_type' => 'Loam',
-            'irrigation_type' => 'Rainfed',
+            'soil_type_id' => 1,
+            'irrigation_type_id' => 1,
         ]);
 
         // Attempt to delete farmer should be blocked (has farm)
@@ -152,16 +152,16 @@ class CrudWorkflowTest extends TestCase {
     }
 
     public function testPlantingStatusFilter(): void {
-        $harvested = $this->db->select('planting', 'planting_id,status', ['status=eq.Harvested']);
+        $harvested = $this->db->select('planting', 'planting_id,planting_status_id', ['planting_status_id=eq.4']);
         $this->assertNotEmpty($harvested);
         foreach ($harvested as $p) {
-            $this->assertEquals('Harvested', $p['status']);
+            $this->assertEquals(4, (int) $p['planting_status_id']);
         }
 
-        $growing = $this->db->select('planting', 'planting_id,status', ['status=eq.Growing']);
+        $growing = $this->db->select('planting', 'planting_id,planting_status_id', ['planting_status_id=eq.3']);
         $this->assertNotEmpty($growing);
         foreach ($growing as $p) {
-            $this->assertEquals('Growing', $p['status']);
+            $this->assertEquals(3, (int) $p['planting_status_id']);
         }
     }
 }

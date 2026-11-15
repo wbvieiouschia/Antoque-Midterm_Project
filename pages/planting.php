@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'area_planted' => trim($_POST['area_planted'] ?? ''),
         'seed_quantity' => trim($_POST['seed_quantity'] ?? ''),
         'expected_harvest_date' => trim($_POST['expected_harvest_date'] ?? ''),
-        'status' => trim($_POST['status'] ?? 'Growing'),
+        'planting_status_id' => (int) ($_POST['planting_status_id'] ?? 3),
     ];
     $errors = [];
     if (!$data['farm_id']) {
@@ -77,6 +77,7 @@ $pageTitle = 'Planting Records';
 
 $farms = $farmModel->all();
 $crops = $cropModel->all();
+$plantingStatuses = $db->select('planting_status', '*', [], ['order' => 'planting_status_id.asc']);
 
 $search = trim($_GET['search'] ?? '');
 $statusFilter = $_GET['status'] ?? '';
@@ -90,7 +91,7 @@ if ($search !== '') {
     $filters[] = 'planting_date=ilike.%' . rawurlencode($search) . '%';
 }
 if ($statusFilter !== '') {
-    $filters[] = 'status=eq.' . rawurlencode($statusFilter);
+    $filters[] = 'planting_status_id=eq.' . (int) $statusFilter;
 }
 if ($farmFilter !== '') {
     $filters[] = 'farm_id=eq.' . (int) $farmFilter;
@@ -129,7 +130,7 @@ if ($action === 'view' && $id > 0) {
     }
 }
 
-$statusOptions = PLANTING_STATUSES; // defined in includes/config.php
+$statusOptions = $plantingStatuses;
 ?>
 <?php if ($action === 'view'): ?>
     <?php if (!$viewRow): ?>
@@ -161,7 +162,7 @@ $statusOptions = PLANTING_STATUSES; // defined in includes/config.php
                         </div>
                         <div>
                             <dt class="text-xs font-semibold text-gray-500 uppercase">Status</dt>
-                            <dd class="text-gray-800 mt-0.5"><span class="status-badge <?php echo $vBadge($viewRow['status']); ?>"><?php echo e($viewRow['status'] ?? ''); ?></span></dd>
+                            <dd class="text-gray-800 mt-0.5"><span class="status-badge <?php echo $vBadge($viewRow['planting_status']['status_name'] ?? ''); ?>"><?php echo e($viewRow['planting_status']['status_name'] ?? ''); ?></span></dd>
                         </div>
                         <div>
                             <dt class="text-xs font-semibold text-gray-500 uppercase">Planting date</dt>
@@ -201,7 +202,7 @@ $statusOptions = PLANTING_STATUSES; // defined in includes/config.php
                                             <td class="px-6 py-3 text-gray-700"><a href="harvest.php?action=view&id=<?php echo (int) $vh['harvest_id']; ?>" class="text-[#4f7a3a] font-medium hover:underline"><?php echo e($vh['harvest_date'] ?? ''); ?></a></td>
                                             <td class="px-6 py-3 text-gray-700 font-medium"><?php echo number_format((float) ($vh['quantity_kg'] ?? 0), 2); ?> kg</td>
                                             <td class="px-6 py-3 text-gray-700">₱<?php echo number_format((float) ($vh['selling_price_per_kg'] ?? 0), 2); ?></td>
-                                            <td class="px-6 py-3 "><span class="status-badge <?php echo $vBadge(($vh['quality_grade'] ?? '') === 'Grade A' ? 'Harvested' : ((($vh['quality_grade'] ?? '') === 'Grade B') ? 'Growing' : '')); ?>"><?php echo e($vh['quality_grade'] ?? ''); ?></span></td>
+                                            <td class="px-6 py-3 "><span class="status-badge <?php echo $vBadge(($vh['quality_grade']['grade_name'] ?? '') === 'Grade A' ? 'Harvested' : ((($vh['quality_grade']['grade_name'] ?? '') === 'Grade B') ? 'Growing' : '')); ?>"><?php echo e($vh['quality_grade']['grade_name'] ?? ''); ?></span></td>
                                             <td class="px-6 py-3 text-gray-700 font-medium">₱<?php echo number_format((float) ($vh['quantity_kg'] ?? 0) * (float) ($vh['selling_price_per_kg'] ?? 0), 2); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -278,12 +279,9 @@ $statusOptions = PLANTING_STATUSES; // defined in includes/config.php
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status <span class="text-red-500">*</span></label>
-                    <select name="status" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
-                        <?php foreach ($statusOptions as $o): ?><option value="<?php echo e(
-    $o,
-); ?>"<?php echo ($editRow['status'] ?? '') == $o ? ' selected' : ''; ?>><?php echo e(
-    $o,
-); ?></option><?php endforeach; ?>
+                    <select name="planting_status_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                        <option value="">Select status</option>
+                        <?php foreach ($statusOptions as $s): ?><option value="<?php echo $s['planting_status_id']; ?>"<?php echo ($editRow['planting_status_id'] ?? 0) == $s['planting_status_id'] ? ' selected' : ''; ?>><?php echo e($s['status_name']); ?></option><?php endforeach; ?>
                     </select>
                 </div>
                 <div class="flex gap-3">
@@ -318,9 +316,7 @@ $statusOptions = PLANTING_STATUSES; // defined in includes/config.php
                 <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
                 <select id="statusFilter" name="status" onchange="this.form.submit()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
                     <option value="">All</option>
-                    <?php foreach ($statusOptions as $o): ?><option value="<?php echo e(
-    $o,
-); ?>"<?php echo $statusFilter === $o ? ' selected' : ''; ?>><?php echo e($o); ?></option><?php endforeach; ?>
+                    <?php foreach ($statusOptions as $s): ?><option value="<?php echo $s['planting_status_id']; ?>"<?php echo $statusFilter == $s['planting_status_id'] ? ' selected' : ''; ?>><?php echo e($s['status_name']); ?></option><?php endforeach; ?>
                 </select>
             </div>
             <div class="relative w-full md:w-1/3">
@@ -379,12 +375,12 @@ $statusOptions = PLANTING_STATUSES; // defined in includes/config.php
                             <td class="px-6 py-3 text-gray-700"><?php echo e($r['expected_harvest_date']); ?></td>
                             <td class="px-6 py-3 text-gray-700"><?php echo number_format($r['area_planted'], 2); ?></td>
                             <td class="px-6 py-3">
-                                <span class="status-badge <?php echo $r['status'] === 'Harvested'
+                                <span class="status-badge <?php echo ($r['planting_status']['status_name'] ?? '') === 'Harvested'
                                     ? 'bg-green-100 text-green-700'
-                                    : ($r['status'] === 'Growing'
+                                    : (($r['planting_status']['status_name'] ?? '') === 'Growing'
                                         ? 'bg-blue-100 text-blue-700'
                                         : 'bg-gray-100 text-gray-700'); ?>">
-                                    <?php echo e($r['status']); ?>
+                                    <?php echo e($r['planting_status']['status_name'] ?? ''); ?>
                                 </span>
                             </td>
                             <td class="px-6 py-3 text-right">

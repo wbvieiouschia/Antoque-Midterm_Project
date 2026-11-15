@@ -21,7 +21,14 @@ $dateTo = $_GET['date_to'] ?? '';
 $reportData = [];
 switch ($reportType) {
     case 'farmers_farms':
-        $farmers = $farmerModel->all();
+        $filters = [];
+        if ($dateFrom !== '') {
+            $filters[] = 'date_registered=gte.' . $dateFrom;
+        }
+        if ($dateTo !== '') {
+            $filters[] = 'date_registered=lte.' . $dateTo;
+        }
+        $farmers = $farmerModel->all($filters);
         $reportData['farmers'] = $farmers;
         // Group farms by farmer (the farmer query does not include farms)
         $reportData['farmsByFarmer'] = [];
@@ -30,27 +37,29 @@ switch ($reportType) {
         }
         break;
     case 'crops_per_farm':
-        $plantings = $plantingModel->all([], ['limit' => 500]);
-        $reportData['plantings'] = $plantings;
-        break;
     case 'planting_status':
-        $plantings = $plantingModel->all([], ['limit' => 500]);
+        $filters = [];
+        if ($dateFrom !== '') {
+            $filters[] = 'planting_date=gte.' . $dateFrom;
+        }
+        if ($dateTo !== '') {
+            $filters[] = 'planting_date=lte.' . $dateTo;
+        }
+        $plantings = $plantingModel->all($filters, ['limit' => 500]);
         $reportData['plantings'] = $plantings;
         break;
     case 'harvest_records':
-        $harvests = $harvestModel->all(
-            [],
-            ['limit' => 500],
-        );
-        $reportData['harvests'] = $harvests;
-        break;
     case 'total_harvested':
-        $harvests = $harvestModel->all([], ['limit' => 500]);
-        $reportData['harvests'] = $harvests;
-        break;
     case 'harvest_value':
+        $filters = [];
+        if ($dateFrom !== '') {
+            $filters[] = 'harvest_date=gte.' . $dateFrom;
+        }
+        if ($dateTo !== '') {
+            $filters[] = 'harvest_date=lte.' . $dateTo;
+        }
         $harvests = $harvestModel->all(
-            [],
+            $filters,
             ['limit' => 500],
         );
         $reportData['harvests'] = $harvests;
@@ -147,7 +156,7 @@ switch ($reportType) {
                             <td class="px-6 py-3 text-gray-700"><?php echo e($p['crop']['crop_name'] ?? '—'); ?></td>
                             <td class="px-6 py-3 text-gray-700"><?php echo e($p['planting_date']); ?></td>
                             <td class="px-6 py-3 text-gray-700"><?php echo number_format($p['area_planted'], 2); ?></td>
-                            <td class="px-6 py-3 text-gray-700"><?php echo e($p['status']); ?></td>
+                            <td class="px-6 py-3 text-gray-700"><?php echo e($p['planting_status']['status_name'] ?? '—'); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -162,7 +171,8 @@ switch ($reportType) {
                     <?php
                     $statusCounts = [];
                     foreach ($reportData['plantings'] as $p) {
-                        $statusCounts[$p['status']] = ($statusCounts[$p['status']] ?? 0) + 1;
+                        $stName = $p['planting_status']['status_name'] ?? 'Unknown';
+                    $statusCounts[$stName] = ($statusCounts[$stName] ?? 0) + 1;
                     }
                     foreach ($statusCounts as $st => $cnt): ?>
                         <tr class="hover:bg-gray-50">
@@ -195,7 +205,7 @@ switch ($reportType) {
                                 $h['selling_price_per_kg'],
                                 2,
                             ); ?></td>
-                            <td class="px-6 py-3 text-gray-700"><?php echo e($h['quality_grade']); ?></td>
+                            <td class="px-6 py-3 text-gray-700"><?php echo e($h['quality_grade']['grade_name'] ?? '—'); ?></td>
                             <td class="px-6 py-3 text-gray-700 font-medium">₱<?php echo number_format(
                                 $h['quantity_kg'] * $h['selling_price_per_kg'],
                                 2,

@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'harvest_date' => trim($_POST['harvest_date'] ?? ''),
         'quantity_kg' => trim($_POST['quantity_kg'] ?? ''),
         'selling_price_per_kg' => trim($_POST['selling_price_per_kg'] ?? ''),
-        'quality_grade' => trim($_POST['quality_grade'] ?? ''),
+        'quality_grade_id' => (int) ($_POST['quality_grade_id'] ?? 0),
         'remark_id' => (int) ($_POST['remark_id'] ?? 0) ?: null,
         'remarks' => trim($_POST['remarks'] ?? ''),
     ];
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!is_numeric($data['selling_price_per_kg']) || $data['selling_price_per_kg'] < 0) {
         $errors[] = 'Selling price must be valid.';
     }
-    if (empty($data['quality_grade'])) {
+    if (!$data['quality_grade_id']) {
         $errors[] = 'Quality grade is required.';
     }
     if ($errors) {
@@ -62,6 +62,7 @@ if ($action === 'delete' && $id > 0) {
 }
 
 $pageTitle = 'Harvest Records';
+$qualityGrades = $db->select('quality_grade', '*', [], ['order' => 'quality_grade_id.asc']);
 
 $plantings = $plantingModel->all([], ['limit' => 100]);
 $remarks = $db->select('harvest_remarks', 'remark_id,remark_description');
@@ -74,10 +75,21 @@ $page = (int) ($_GET['page'] ?? 1);
 
 $filters = [];
 if ($search !== '') {
-    $filters[] = 'quality_grade=ilike.%' . rawurlencode($search) . '%';
+    $matchedGrade = null;
+    foreach ($qualityGrades as $g) {
+        if (stripos($g['grade_name'], $search) !== false) {
+            $matchedGrade = $g['quality_grade_id'];
+            break;
+        }
+    }
+    if ($matchedGrade !== null) {
+        $filters[] = 'quality_grade_id=eq.' . (int) $matchedGrade;
+    } else {
+        $filters[] = 'remarks=ilike.%' . rawurlencode($search) . '%';
+    }
 }
 if ($gradeFilter !== '') {
-    $filters[] = 'quality_grade=eq.' . rawurlencode($gradeFilter);
+    $filters[] = 'quality_grade_id=eq.' . (int) $gradeFilter;
 }
 
 $countRows = $db->select('harvest', 'harvest_id', $filters);
@@ -145,7 +157,7 @@ $gradeOptions = ['Grade A', 'Grade B', 'Grade C'];
                         </div>
                         <div>
                             <dt class="text-xs font-semibold text-gray-500 uppercase">Quality grade</dt>
-                            <dd class="text-gray-800 mt-0.5"><span class="status-badge <?php echo $vGrade($viewRow['quality_grade'] ?? ''); ?>"><?php echo e($viewRow['quality_grade'] ?? ''); ?></span></dd>
+                            <dd class="text-gray-800 mt-0.5"><span class="status-badge <?php echo $vGrade($viewRow['quality_grade']['grade_name'] ?? ''); ?>"><?php echo e($viewRow['quality_grade']['grade_name'] ?? ''); ?></span></dd>
                         </div>
                         <div>
                             <dt class="text-xs font-semibold text-gray-500 uppercase">Remarks</dt>
@@ -224,12 +236,9 @@ $pl['planting_id']
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Quality Grade <span class="text-red-500">*</span></label>
-                        <select name="quality_grade" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
-                            <?php foreach ($gradeOptions as $o): ?><option value="<?php echo e(
-    $o,
-); ?>"<?php echo ($editRow['quality_grade'] ?? '') == $o ? ' selected' : ''; ?>><?php echo e(
-    $o,
-); ?></option><?php endforeach; ?>
+                        <select name="quality_grade_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                            <option value="">Select grade</option>
+                            <?php foreach ($qualityGrades as $g): ?><option value="<?php echo $g['quality_grade_id']; ?>"<?php echo ($editRow['quality_grade_id'] ?? 0) == $g['quality_grade_id'] ? ' selected' : ''; ?>><?php echo e($g['grade_name']); ?></option><?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -282,9 +291,7 @@ $pl['planting_id']
                 <label class="block text-xs font-medium text-gray-500 mb-1">Quality Grade</label>
                 <select id="gradeFilter" name="grade" onchange="this.form.submit()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
                     <option value="">All</option>
-                    <?php foreach ($gradeOptions as $o): ?><option value="<?php echo e(
-    $o,
-); ?>"<?php echo $gradeFilter === $o ? ' selected' : ''; ?>><?php echo e($o); ?></option><?php endforeach; ?>
+                    <?php foreach ($qualityGrades as $g): ?><option value="<?php echo $g['quality_grade_id']; ?>"<?php echo $gradeFilter == $g['quality_grade_id'] ? ' selected' : ''; ?>><?php echo e($g['grade_name']); ?></option><?php endforeach; ?>
                 </select>
             </div>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition flex items-center gap-2"><i class="fa-solid fa-search"></i> Search</button>
@@ -334,12 +341,12 @@ $pl['planting_id']
                                 2,
                             ); ?></td>
                             <td class="px-6 py-3">
-                                <span class="status-badge <?php echo $r['quality_grade'] === 'Grade A'
+                                <span class="status-badge <?php echo ($r['quality_grade']['grade_name'] ?? '') === 'Grade A'
                                     ? 'bg-green-100 text-green-700'
-                                    : ($r['quality_grade'] === 'Grade B'
+                                    : (($r['quality_grade']['grade_name'] ?? '') === 'Grade B'
                                         ? 'bg-blue-100 text-blue-700'
                                         : 'bg-gray-100 text-gray-700'); ?>">
-                                    <?php echo e($r['quality_grade']); ?>
+                                    <?php echo e($r['quality_grade']['grade_name'] ?? ''); ?>
                                 </span>
                             </td>
                             <td class="px-6 py-3 text-gray-700 font-medium">₱<?php echo number_format(

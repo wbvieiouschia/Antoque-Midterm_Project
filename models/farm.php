@@ -7,7 +7,7 @@ class Farm {
     }
 
     public function all(array $filters = [], array $options = []): array {
-        return $this->db->select('farm', '*,farmer(first_name,last_name)', $filters, $options);
+        return $this->db->select('farm', '*,farmer(first_name,last_name),soil_type(soil_type_name),irrigation_type(irrigation_type_name)', $filters, $options);
     }
 
     public function find(int $id): ?array {
@@ -34,7 +34,7 @@ class Farm {
             $filters[] = 'or=(farm_name.ilike.%' . $w . '%,location.ilike.%' . $w . '%)';
         }
         if ($irrigation !== '') {
-            $filters[] = 'irrigation_type=eq.' . rawurlencode($irrigation);
+            $filters[] = 'irrigation_type_id=eq.' . (int) $irrigation;
         }
         return $this->all($filters);
     }

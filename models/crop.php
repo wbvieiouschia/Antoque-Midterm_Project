@@ -7,7 +7,7 @@ class Crop {
     }
 
     public function all(array $filters = [], array $options = []): array {
-        return $this->db->select('crop', '*', $filters, $options);
+        return $this->db->select('crop', '*,crop_category(category_name),season(season_name)', $filters, $options);
     }
 
     public function find(int $id): ?array {
@@ -34,10 +34,10 @@ class Crop {
             $filters[] = 'or=(crop_name.ilike.%' . $w . '%,variety.ilike.%' . $w . '%)';
         }
         if ($category !== '') {
-            $filters[] = 'crop_category=eq.' . rawurlencode($category);
+            $filters[] = 'crop_category_id=eq.' . (int) $category;
         }
         if ($season !== '') {
-            $filters[] = 'recommended_season=eq.' . rawurlencode($season);
+            $filters[] = 'season_id=eq.' . (int) $season;
         }
         return $this->all($filters);
     }

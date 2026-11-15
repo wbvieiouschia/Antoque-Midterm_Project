@@ -23,23 +23,22 @@ class DatabaseTest extends TestCase {
     }
 
     public function testSelectWithFilter(): void {
-        $crops = $this->db->select('crop', 'crop_id,crop_name', ['crop_category=eq.Vegetable']);
+        $crops = $this->db->select('crop', 'crop_id,crop_name', ['crop_category_id=eq.2']);
         $this->assertIsArray($crops);
         $this->assertGreaterThanOrEqual(2, count($crops));
         foreach ($crops as $c) {
-            // Verify they're actually vegetables by checking the DB
             $full = $this->db->find('crop', $c['crop_id'], 'crop_id');
-            $this->assertEquals('Vegetable', $full['crop_category']);
+            $this->assertEquals(2, (int) $full['crop_category_id']);
         }
     }
 
     public function testSelectWithUrlEncodedEqValue(): void {
-       $farms = $this->db->select('farm', 'farm_id,farm_name,irrigation_type', [
-            'irrigation_type=eq.' . rawurlencode('Drip Irrigation'),
+       $farms = $this->db->select('farm', 'farm_id,farm_name,irrigation_type_id', [
+            'irrigation_type_id=eq.3',
         ]);
         $this->assertCount(3, $farms);
         foreach ($farms as $f) {
-            $this->assertEquals('Drip Irrigation', $f['irrigation_type']);
+            $this->assertEquals(3, (int) $f['irrigation_type_id']);
         }
     }
 
@@ -157,11 +156,11 @@ class DatabaseTest extends TestCase {
     }
 
     public function testAggregateCount(): void {
-        $statusCounts = $this->db->select('planting', 'status,count');
+        $statusCounts = $this->db->select('planting', 'planting_status_id,count');
         $this->assertIsArray($statusCounts);
         $this->assertNotEmpty($statusCounts);
         foreach ($statusCounts as $row) {
-            $this->assertArrayHasKey('status', $row);
+            $this->assertArrayHasKey('planting_status_id', $row);
             $this->assertArrayHasKey('count', $row);
             $this->assertGreaterThan(0, $row['count']);
         }

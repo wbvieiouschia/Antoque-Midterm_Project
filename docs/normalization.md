@@ -36,12 +36,22 @@ HARVEST (harvest_id, planting_id, harvest_date, quantity_kg, selling_price_per_k
 
 - Remove transitive dependencies (non-key attributes depending on other non-key attributes).
 - `crop_name`, `variety`, etc. depend on `crop_id`, not on `farm_id` or `planting_id`. All non-key attributes depend only on the PK.
-- Lookup table for harvest remarks (Harvest Remarks) added to resolve controlled values.
+- Controlled text values (soil type, irrigation type, crop category, season, planting status, quality grade, harvest remarks) are moved to lookup tables so that only their IDs are stored in the main tables.
 
 ```
+SOIL_TYPE (soil_type_id, soil_type_name)
+IRRIGATION_TYPE (irrigation_type_id, irrigation_type_name)
+CROP_CATEGORY (crop_category_id, category_name)
+SEASON (season_id, season_name)
+PLANTING_STATUS (planting_status_id, status_name)
+QUALITY_GRADE (quality_grade_id, grade_name)
 HARVEST_REMARKS (remark_id, remark_description)
-HARVEST (harvest_id, planting_id, harvest_date, quantity_kg, selling_price_per_kg, quality_grade, remark_id, remarks)
 ```
+
+- `FARM` stores `soil_type_id` and `irrigation_type_id`.
+- `CROP` stores `crop_category_id` and `season_id`.
+- `PLANTING` stores `planting_status_id`.
+- `HARVEST` stores `quality_grade_id` and `remark_id`.
 
 ## Authentication table
 
@@ -57,7 +67,9 @@ APP_USER (user_id, full_name, email, password_hash, role, created_at)
 
 ## Final 3NF Tables
 
-- FARMER, FARM, CROP, PLANTING, HARVEST, HARVEST_REMARKS, APP_USER
+- FARMER, FARM, CROP, PLANTING, HARVEST
+- SOIL_TYPE, IRRIGATION_TYPE, CROP_CATEGORY, SEASON, PLANTING_STATUS, QUALITY_GRADE, HARVEST_REMARKS (lookup)
+- APP_USER (authentication)
 
 ## Relationships
 
@@ -65,5 +77,11 @@ APP_USER (user_id, full_name, email, password_hash, role, created_at)
 - FARM 1:M PLANTING
 - CROP 1:M PLANTING
 - PLANTING 1:M HARVEST
+- SOIL_TYPE 1:M FARM
+- IRRIGATION_TYPE 1:M FARM
+- CROP_CATEGORY 1:M CROP
+- SEASON 1:M CROP
+- PLANTING_STATUS 1:M PLANTING
+- QUALITY_GRADE 1:M HARVEST
 - HARVEST_REMARKS 1:M HARVEST (lookup, optional)
 - APP_USER has no relationships (authentication only)

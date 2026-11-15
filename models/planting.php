@@ -8,7 +8,7 @@ class Planting {
     }
 
     public function all(array $filters = [], array $options = []): array {
-        return $this->db->select('planting', '*,farm(farm_name),crop(crop_name)', $filters, $options);
+        return $this->db->select('planting', '*,farm(farm_name),crop(crop_name),planting_status(status_name)', $filters, $options);
     }
 
     public function find(int $id): ?array {
@@ -33,7 +33,7 @@ class Planting {
             $filters[] = 'planting_date=ilike.%' . rawurlencode($term) . '%';
         }
         if ($status !== '') {
-            $filters[] = 'status=eq.' . rawurlencode($status);
+            $filters[] = 'planting_status_id=eq.' . (int) $status;
         }
         if ($farmId !== '') {
             $filters[] = 'farm_id=eq.' . (int)$farmId;
@@ -46,6 +46,16 @@ class Planting {
     }
 
     public function byStatus(): array {
-        return $this->db->select('planting', 'status,count');
+        $rows = $this->all();
+        $counts = [];
+        foreach ($rows as $r) {
+            $name = $r['planting_status']['status_name'] ?? 'Unknown';
+            $counts[$name] = ($counts[$name] ?? 0) + 1;
+        }
+        $result = [];
+        foreach ($counts as $name => $n) {
+            $result[] = ['status' => $name, 'count' => $n];
+        }
+        return $result;
     }
 }

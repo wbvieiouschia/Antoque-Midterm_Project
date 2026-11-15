@@ -5,6 +5,19 @@ A web-based Agriculture Information System demonstrating database normalization,
 relational design, secure data management, CRUD operations, reporting, and
 dashboard visualization.
 
+## Objectives
+
+- Manage farmer, farm, crop, planting, and harvest records.
+- Provide dashboard summaries and reports for agricultural operations.
+- Enforce authentication and role-based access (administrator/staff).
+- Demonstrate normalized database design with lookup tables and audit fields.
+
+## Scope
+
+**In scope:** management of farmers, farms, crops, planting records, and harvest records; dashboard summaries; reports; authentication (administrator/staff); and lookup tables for soil type, irrigation type, crop category, season, planting status, and quality grade.
+
+**Out of scope:** financial accounting, input inventory, weather integration, and native mobile applications.
+
 ## Modules
 
 - Farmers
@@ -15,6 +28,14 @@ dashboard visualization.
 - Dashboard (summary cards + charts)
 - Reports (farmers & farms, crops per farm, plantings by status, harvests, harvested quantity, estimated value)
 - Authentication (Administrator / Staff roles, with a Create Account page)
+
+## User Guide
+
+1. Open the app in your browser and sign in with your account.
+2. Use the navigation bar (or the mobile menu on phones) to open Farmers, Farms, Crops, Planting, Harvest, or Reports.
+3. Use **Add** to create records; **Edit** and **Delete** are available per row.
+4. Dashboard shows totals and recent records; Reports provides filtered lists and summaries.
+5. Administrators can access the Reports module.
 
 ## Setup
 

@@ -13,9 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
         'crop_name' => trim($_POST['crop_name'] ?? ''),
         'variety' => trim($_POST['variety'] ?? ''),
-        'crop_category' => trim($_POST['crop_category'] ?? ''),
+        'crop_category_id' => (int) ($_POST['crop_category_id'] ?? 0),
         'growing_period_days' => (int) ($_POST['growing_period_days'] ?? 0),
-        'recommended_season' => trim($_POST['recommended_season'] ?? ''),
+        'season_id' => (int) ($_POST['season_id'] ?? 0),
     ];
     $errors = [];
     if (empty($data['crop_name'])) {
@@ -24,13 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($data['variety'])) {
         $errors[] = 'Variety is required.';
     }
-    if (empty($data['crop_category'])) {
+    if (!$data['crop_category_id']) {
         $errors[] = 'Category is required.';
     }
     if (!$data['growing_period_days']) {
         $errors[] = 'Growing period (days) is required.';
     }
-    if (empty($data['recommended_season'])) {
+    if (!$data['season_id']) {
         $errors[] = 'Recommended season is required.';
     }
     if ($errors) {
@@ -65,6 +65,8 @@ if ($action === 'delete' && $id > 0) {
 }
 
 $pageTitle = 'Crops';
+$categories = $db->select('crop_category', '*', [], ['order' => 'category_name.asc']);
+$seasons = $db->select('season', '*', [], ['order' => 'season_name.asc']);
 
 $search = trim($_GET['search'] ?? '');
 $catFilter = $_GET['category'] ?? '';
@@ -82,10 +84,10 @@ if ($search !== '') {
     }
 }
 if ($catFilter !== '') {
-    $filters[] = 'crop_category=eq.' . rawurlencode($catFilter);
+    $filters[] = 'crop_category_id=eq.' . (int) $catFilter;
 }
 if ($seasonFilter !== '') {
-    $filters[] = 'recommended_season=eq.' . rawurlencode($seasonFilter);
+    $filters[] = 'season_id=eq.' . (int) $seasonFilter;
 }
 
 $countRows = $db->select('crop', 'crop_id', $filters);
@@ -110,7 +112,8 @@ $vBadge = function ($status) {
 $viewRow = null;
 $viewPlantings = [];
 if ($action === 'view' && $id > 0) {
-    $viewRow = $cropModel->find($id);
+    $vr = $cropModel->all(['crop_id=eq.' . $id], ['limit' => 1]);
+    $viewRow = $vr[0] ?? null;
     if ($viewRow) {
         $viewPlantings = $plantingModel->all(['crop_id=eq.' . $id], ['order' => 'planting_id.desc']);
     }
@@ -145,11 +148,11 @@ $seasonOptions = ['Wet Season', 'Dry Season', 'Year Round'];
                         </div>
                         <div>
                             <dt class="text-xs font-semibold text-gray-500 uppercase">Category</dt>
-                            <dd class="text-gray-800 mt-0.5"><?php echo e($viewRow['crop_category'] ?? '') ?: '—'; ?></dd>
+                            <dd class="text-gray-800 mt-0.5"><?php echo e($viewRow['crop_category']['category_name'] ?? '') ?: '—'; ?></dd>
                         </div>
                         <div>
                             <dt class="text-xs font-semibold text-gray-500 uppercase">Recommended season</dt>
-                            <dd class="text-gray-800 mt-0.5"><?php echo e($viewRow['recommended_season'] ?? '') ?: '—'; ?></dd>
+                            <dd class="text-gray-800 mt-0.5"><?php echo e($viewRow['season']['season_name'] ?? '') ?: '—'; ?></dd>
                         </div>
                         <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                             <div>
@@ -178,7 +181,7 @@ $seasonOptions = ['Wet Season', 'Dry Season', 'Year Round'];
                                             <td class="px-6 py-3 text-gray-700"><a href="planting.php?action=view&id=<?php echo (int) $vp['planting_id']; ?>" class="text-[#4f7a3a] font-medium hover:underline"><?php echo e($vp['planting_date'] ?? ''); ?></a></td>
                                             <td class="px-6 py-3 text-gray-700"><?php echo e($vp['expected_harvest_date'] ?? ''); ?></td>
                                             <td class="px-6 py-3 text-gray-700"><?php echo number_format((float) ($vp['area_planted'] ?? 0), 2); ?></td>
-                                            <td class="px-6 py-3 "><span class="status-badge <?php echo $vBadge($vp['status']); ?>"><?php echo e($vp['status'] ?? ''); ?></span></td>
+                                            <td class="px-6 py-3 "><span class="status-badge <?php echo $vBadge($vp['planting_status']['status_name'] ?? ''); ?>"><?php echo e($vp['planting_status']['status_name'] ?? ''); ?></span></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -214,14 +217,9 @@ $seasonOptions = ['Wet Season', 'Dry Season', 'Year Round'];
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Category <span class="text-red-500">*</span></label>
-                    <select name="crop_category" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
-                        <?php foreach ($catOptions as $o): ?><option value="<?php echo e($o); ?>"<?php echo ($editRow[
-    'crop_category'
-] ??
-    '') ==
-$o
-    ? ' selected'
-    : ''; ?>><?php echo e($o); ?></option><?php endforeach; ?>
+                    <select name="crop_category_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                        <option value="">Select category</option>
+                        <?php foreach ($categories as $c): ?><option value="<?php echo $c['crop_category_id']; ?>"<?php echo ($editRow['crop_category_id'] ?? 0) == $c['crop_category_id'] ? ' selected' : ''; ?>><?php echo e($c['category_name']); ?></option><?php endforeach; ?>
                     </select>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -233,12 +231,9 @@ $o
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Recommended Season <span class="text-red-500">*</span></label>
-                        <select name="recommended_season" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
-                            <?php foreach ($seasonOptions as $o): ?><option value="<?php echo e(
-    $o,
-); ?>"<?php echo ($editRow['recommended_season'] ?? '') == $o ? ' selected' : ''; ?>><?php echo e(
-    $o,
-); ?></option><?php endforeach; ?>
+                        <select name="season_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                            <option value="">Select season</option>
+                            <?php foreach ($seasons as $s): ?><option value="<?php echo $s['season_id']; ?>"<?php echo ($editRow['season_id'] ?? 0) == $s['season_id'] ? ' selected' : ''; ?>><?php echo e($s['season_name']); ?></option><?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -274,19 +269,14 @@ $o
                 <label class="block text-xs font-medium text-gray-500 mb-1">Category</label>
                 <select id="categoryFilter" name="category" onchange="this.form.submit()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
                     <option value="">All</option>
-                    <?php foreach ($catOptions as $o): ?><option value="<?php echo e($o); ?>"<?php echo $catFilter ===
-$o
-    ? ' selected'
-    : ''; ?>><?php echo e($o); ?></option><?php endforeach; ?>
+                    <?php foreach ($categories as $c): ?><option value="<?php echo $c['crop_category_id']; ?>"<?php echo $catFilter == $c['crop_category_id'] ? ' selected' : ''; ?>><?php echo e($c['category_name']); ?></option><?php endforeach; ?>
                 </select>
             </div>
             <div class="relative w-full md:w-1/3">
                 <label class="block text-xs font-medium text-gray-500 mb-1">Season</label>
                 <select id="seasonFilter" name="season" onchange="this.form.submit()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
                     <option value="">All</option>
-                    <?php foreach ($seasonOptions as $o): ?><option value="<?php echo e(
-    $o,
-); ?>"<?php echo $seasonFilter === $o ? ' selected' : ''; ?>><?php echo e($o); ?></option><?php endforeach; ?>
+                    <?php foreach ($seasons as $s): ?><option value="<?php echo $s['season_id']; ?>"<?php echo $seasonFilter == $s['season_id'] ? ' selected' : ''; ?>><?php echo e($s['season_name']); ?></option><?php endforeach; ?>
                 </select>
             </div>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition flex items-center gap-2"><i class="fa-solid fa-search"></i> Search</button>
@@ -327,9 +317,9 @@ $o
                             <td class="px-6 py-3 font-medium text-gray-900"><?php echo $r['crop_id']; ?></td>
                             <td class="px-6 py-3 text-gray-700 font-medium"><?php echo e($r['crop_name']); ?></td>
                             <td class="px-6 py-3 text-gray-700"><?php echo e($r['variety']); ?></td>
-                            <td class="px-6 py-3 text-gray-700"><?php echo e($r['crop_category']); ?></td>
+                            <td class="px-6 py-3 text-gray-700"><?php echo e($r['crop_category']['category_name'] ?? '—'); ?></td>
                             <td class="px-6 py-3 text-gray-700"><?php echo $r['growing_period_days']; ?> days</td>
-                            <td class="px-6 py-3 text-gray-700"><?php echo e($r['recommended_season']); ?></td>
+                            <td class="px-6 py-3 text-gray-700"><?php echo e($r['season']['season_name'] ?? '—'); ?></td>
                             <td class="px-6 py-3 text-right">
                                 <a href="crops.php?action=view&id=<?php echo $r['crop_id']; ?>" class="px-2.5 py-1 border border-gray-300 rounded text-xs font-medium text-gray-700 hover:bg-gray-50 mr-3">View</a>
                                 <a href="crops.php?action=edit&id=<?php echo $r[

@@ -33,6 +33,7 @@ $plantingStatus = $plantingModel->byStatus();
 
 // Total harvested quantity
 $totalHarvest = $harvestModel->totalQuantity();
+$totalHarvestValue = $harvestModel->totalValue();
 
 $pageTitle = 'Dashboard';
 ?>
@@ -111,7 +112,7 @@ $pageTitle = 'Dashboard';
     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div class="px-4 py-3 border-b border-gray-200">
             <p class="text-xs text-gray-500 uppercase font-semibold">Estimated Harvest Value</p>
-            <h2 class="text-2xl font-bold text-gray-900 mt-0.5">₱ <?php echo number_format($totalHarvest * 25, 2); ?></h2>
+            <h2 class="text-2xl font-bold text-gray-900 mt-0.5">₱ <?php echo number_format($totalHarvestValue, 2); ?></h2>
         </div>
         <div class="p-6">
             <h3 class="font-semibold text-gray-800 mb-4">Biggest Harvest Value</h3>
@@ -215,10 +216,10 @@ $pageTitle = 'Dashboard';
                                     $p['planting_date'] ?? '',
                                 ); ?></td>
                                 <td class="py-2">
-                                    <span class="status-badge <?php echo $p['status'] === 'Harvested'
+                                    <span class="status-badge <?php echo ($p['planting_status']['status_name'] ?? '') === 'Harvested'
                                         ? 'bg-[#4f7a3a]/15 text-[#3b5f2b]'
                                         : 'bg-[#f2c14e]/30 text-[#6b4e0a]'; ?>">
-                                        <?php echo htmlspecialchars($p['status']); ?>
+                                        <?php echo htmlspecialchars($p['planting_status']['status_name'] ?? ''); ?>
                                     </span>
                                 </td>
                             </tr>
@@ -264,12 +265,12 @@ $pageTitle = 'Dashboard';
                                     2,
                                 ); ?></td>
                                 <td class="py-2">
-                                    <span class="status-badge <?php echo $h['quality_grade'] === 'Grade A'
+                                    <span class="status-badge <?php echo ($h['quality_grade']['grade_name'] ?? '') === 'Grade A'
                                         ? 'bg-[#4f7a3a]/15 text-[#3b5f2b]'
-                                        : ($h['quality_grade'] === 'Grade B'
+                                        : (($h['quality_grade']['grade_name'] ?? '') === 'Grade B'
                                             ? 'bg-[#f2c14e]/30 text-[#6b4e0a]'
                                             : 'bg-stone-100 text-stone-600'); ?>">
-                                        <?php echo htmlspecialchars($h['quality_grade']); ?>
+                                        <?php echo htmlspecialchars($h['quality_grade']['grade_name'] ?? ''); ?>
                                     </span>
                                 </td>
                             </tr>

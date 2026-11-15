@@ -186,8 +186,8 @@ foreach ($viewFarms as $vf) {
                                             <td class="px-6 py-3 text-gray-700 font-medium"><?php echo e($vf['farm_name'] ?? ''); ?></td>
                                             <td class="px-6 py-3 text-gray-700"><?php echo e($vf['location'] ?? ''); ?></td>
                                             <td class="px-6 py-3 text-gray-700"><?php echo number_format((float) ($vf['area_hectares'] ?? 0), 2); ?></td>
-                                            <td class="px-6 py-3 text-gray-700"><?php echo e($vf['soil_type'] ?? ''); ?></td>
-                                            <td class="px-6 py-3 text-gray-700"><?php echo e($vf['irrigation_type'] ?? ''); ?></td>
+                                            <td class="px-6 py-3 text-gray-700"><?php echo e($vf['soil_type']['soil_type_name'] ?? ''); ?></td>
+                                            <td class="px-6 py-3 text-gray-700"><?php echo e($vf['irrigation_type']['irrigation_type_name'] ?? ''); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>

@@ -7,7 +7,7 @@ class Harvest {
     }
 
     public function all(array $filters = [], array $options = []): array {
-        return $this->db->select('harvest', '*,planting(planting_id,farm(farm_name),crop(crop_name))', $filters, $options);
+        return $this->db->select('harvest', '*,planting(planting_id,farm(farm_name),crop(crop_name)),quality_grade(grade_name)', $filters, $options);
     }
 
     public function find(int $id): ?array {
@@ -29,10 +29,10 @@ class Harvest {
     public function search(string $term, string $grade = ''): array {
         $filters = [];
         if ($term !== '') {
-            $filters[] = 'quality_grade=ilike.%' . rawurlencode($term) . '%';
+            $filters[] = 'remarks=ilike.%' . rawurlencode($term) . '%';
         }
         if ($grade !== '') {
-            $filters[] = 'quality_grade=eq.' . rawurlencode($grade);
+            $filters[] = 'quality_grade_id=eq.' . (int) $grade;
         }
         return $this->all($filters);
     }
@@ -46,6 +46,15 @@ class Harvest {
         $total = 0;
         foreach ($rows as $r) {
             $total += (float)($r['quantity_kg'] ?? 0);
+        }
+        return $total;
+    }
+
+    public function totalValue(): float {
+        $rows = $this->db->select('harvest', 'quantity_kg,selling_price_per_kg');
+        $total = 0;
+        foreach ($rows as $r) {
+            $total += (float)($r['quantity_kg'] ?? 0) * (float)($r['selling_price_per_kg'] ?? 0);
         }
         return $total;
     }

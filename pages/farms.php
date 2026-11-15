@@ -17,8 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'farm_name' => trim($_POST['farm_name'] ?? ''),
         'location' => trim($_POST['location'] ?? ''),
         'area_hectares' => trim($_POST['area_hectares'] ?? ''),
-        'soil_type' => trim($_POST['soil_type'] ?? ''),
-        'irrigation_type' => trim($_POST['irrigation_type'] ?? ''),
+        'soil_type_id' => (int) ($_POST['soil_type_id'] ?? 0),
+        'irrigation_type_id' => (int) ($_POST['irrigation_type_id'] ?? 0),
     ];
     $errors = [];
     if (!$data['farmer_id']) {
@@ -33,10 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!is_numeric($data['area_hectares']) || $data['area_hectares'] <= 0) {
         $errors[] = 'Area must be a positive number.';
     }
-    if (empty($data['soil_type'])) {
+    if (!$data['soil_type_id']) {
         $errors[] = 'Soil type is required.';
     }
-    if (empty($data['irrigation_type'])) {
+    if (!$data['irrigation_type_id']) {
         $errors[] = 'Irrigation type is required.';
     }
     if ($errors) {
@@ -74,6 +74,8 @@ $pageTitle = 'Farms';
 
 // Fetch farmers for dropdown
 $farmers = $farmerModel->all();
+$soilTypes = $db->select('soil_type', '*', [], ['order' => 'soil_type_name.asc']);
+$irrigationTypes = $db->select('irrigation_type', '*', [], ['order' => 'irrigation_type_name.asc']);
 
 // Search/filter/sort/pagination
 $search = trim($_GET['search'] ?? '');
@@ -91,7 +93,7 @@ if ($search !== '') {
     }
 }
 if ($irrFilter !== '') {
-    $filters[] = 'irrigation_type=eq.' . rawurlencode($irrFilter);
+    $filters[] = 'irrigation_type_id=eq.' . (int) $irrFilter;
 }
 
 $countRows = $db->select('farm', 'farm_id', $filters);
@@ -157,11 +159,11 @@ $irrOptions = ['Rainfed', 'Irrigated', 'Drip Irrigation'];
                         </div>
                         <div>
                             <dt class="text-xs font-semibold text-gray-500 uppercase">Soil type</dt>
-                            <dd class="text-gray-800 mt-0.5"><?php echo e($viewRow['soil_type'] ?? '') ?: '—'; ?></dd>
+                            <dd class="text-gray-800 mt-0.5"><?php echo e($viewRow['soil_type']['soil_type_name'] ?? '') ?: '—'; ?></dd>
                         </div>
                         <div>
                             <dt class="text-xs font-semibold text-gray-500 uppercase">Irrigation</dt>
-                            <dd class="text-gray-800 mt-0.5"><?php echo e($viewRow['irrigation_type'] ?? '') ?: '—'; ?></dd>
+                            <dd class="text-gray-800 mt-0.5"><?php echo e($viewRow['irrigation_type']['irrigation_type_name'] ?? '') ?: '—'; ?></dd>
                         </div>
                         <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                             <div>
@@ -190,7 +192,7 @@ $irrOptions = ['Rainfed', 'Irrigated', 'Drip Irrigation'];
                                             <td class="px-6 py-3 text-gray-700"><a href="planting.php?action=view&id=<?php echo (int) $vp['planting_id']; ?>" class="text-[#4f7a3a] font-medium hover:underline"><?php echo e($vp['planting_date'] ?? ''); ?></a></td>
                                             <td class="px-6 py-3 text-gray-700"><?php echo e($vp['expected_harvest_date'] ?? ''); ?></td>
                                             <td class="px-6 py-3 text-gray-700"><?php echo number_format((float) ($vp['area_planted'] ?? 0), 2); ?></td>
-                                            <td class="px-6 py-3 "><span class="status-badge <?php echo $vBadge($vp['status']); ?>"><?php echo e($vp['status'] ?? ''); ?></span></td>
+                                            <td class="px-6 py-3 "><span class="status-badge <?php echo $vBadge($vp['planting_status']['status_name'] ?? ''); ?>"><?php echo e($vp['planting_status']['status_name'] ?? ''); ?></span></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -246,21 +248,17 @@ $irrOptions = ['Rainfed', 'Irrigated', 'Drip Irrigation'];
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Soil Type <span class="text-red-500">*</span></label>
-                        <input type="text" name="soil_type" required value="<?php echo e(
-                            $editRow['soil_type'] ?? ($_POST['soil_type'] ?? ''),
-                        ); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                        <select name="soil_type_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                        <option value="">Select soil type</option>
+                        <?php foreach ($soilTypes as $s): ?><option value="<?php echo $s['soil_type_id']; ?>"<?php echo ($editRow['soil_type_id'] ?? 0) == $s['soil_type_id'] ? ' selected' : ''; ?>><?php echo e($s['soil_type_name']); ?></option><?php endforeach; ?>
+                    </select>
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Irrigation Type <span class="text-red-500">*</span></label>
-                    <select name="irrigation_type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
-                        <?php foreach ($irrOptions as $o): ?><option value="<?php echo e($o); ?>"<?php echo ($editRow[
-    'irrigation_type'
-] ??
-    '') ==
-$o
-    ? ' selected'
-    : ''; ?>><?php echo e($o); ?></option><?php endforeach; ?>
+                    <select name="irrigation_type_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                        <option value="">Select irrigation type</option>
+                        <?php foreach ($irrigationTypes as $it): ?><option value="<?php echo $it['irrigation_type_id']; ?>"<?php echo ($editRow['irrigation_type_id'] ?? 0) == $it['irrigation_type_id'] ? ' selected' : ''; ?>><?php echo e($it['irrigation_type_name']); ?></option><?php endforeach; ?>
                     </select>
                 </div>
                 <div class="flex gap-3">
@@ -295,10 +293,7 @@ $o
                 <label class="block text-xs font-medium text-gray-500 mb-1">Irrigation Type</label>
                 <select id="irrigationFilter" name="irrigation" onchange="this.form.submit()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
                     <option value="">All</option>
-                    <?php foreach ($irrOptions as $o): ?><option value="<?php echo e($o); ?>"<?php echo $irrFilter ===
-$o
-    ? ' selected'
-    : ''; ?>><?php echo e($o); ?></option><?php endforeach; ?>
+                    <?php foreach ($irrigationTypes as $it): ?><option value="<?php echo $it['irrigation_type_id']; ?>"<?php echo $irrFilter == $it['irrigation_type_id'] ? ' selected' : ''; ?>><?php echo e($it['irrigation_type_name']); ?></option><?php endforeach; ?>
                 </select>
             </div>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition flex items-center gap-2"><i class="fa-solid fa-search"></i> Search</button>
@@ -343,8 +338,8 @@ $o
                                 $r['area_hectares'],
                                 2,
                             ); ?></td>
-                            <td class="px-6 py-3 text-gray-700"><?php echo e($r['soil_type']); ?></td>
-                            <td class="px-6 py-3 text-gray-700"><?php echo e($r['irrigation_type']); ?></td>
+                            <td class="px-6 py-3 text-gray-700"><?php echo e($r['soil_type']['soil_type_name'] ?? '—'); ?></td>
+                            <td class="px-6 py-3 text-gray-700"><?php echo e($r['irrigation_type']['irrigation_type_name'] ?? '—'); ?></td>
                             <td class="px-6 py-3 text-right">
                                 <a href="farms.php?action=view&id=<?php echo $r['farm_id']; ?>" class="px-2.5 py-1 border border-gray-300 rounded text-xs font-medium text-gray-700 hover:bg-gray-50 mr-3">View</a>
                                 <a href="farms.php?action=edit&id=<?php echo $r[

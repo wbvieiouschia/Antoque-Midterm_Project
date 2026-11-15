@@ -49,7 +49,7 @@ switch ($module) {
         $rows = $cropModel->all([], ['limit' => 100]);
         foreach ($rows as $r) {
             if (stripos($r['crop_name'], $query) !== false || stripos($r['variety'] ?? '', $query) !== false) {
-                $results[] = ['id' => $r['crop_id'], 'label' => $r['crop_name'], 'sub' => $r['variety'] . ' (' . $r['crop_category'] . ')'];
+                $results[] = ['id' => $r['crop_id'], 'label' => $r['crop_name'], 'sub' => $r['variety'] . ' (' . ($r['crop_category']['category_name'] ?? '') . ')'];
             }
         }
         break;
@@ -57,8 +57,9 @@ switch ($module) {
         $rows = $plantingModel->all([], ['limit' => 100]);
         foreach ($rows as $r) {
             $label = $r['planting_id'] . ' — ' . ($r['farm']['farm_name'] ?? '?') . ' / ' . ($r['crop']['crop_name'] ?? '?');
-            if (stripos($label, $query) !== false || stripos($r['status'] ?? '', $query) !== false) {
-                $results[] = ['id' => $r['planting_id'], 'label' => $label, 'sub' => $r['status'] ?? ''];
+            $statusName = $r['planting_status']['status_name'] ?? '';
+            if (stripos($label, $query) !== false || stripos($statusName, $query) !== false) {
+                $results[] = ['id' => $r['planting_id'], 'label' => $label, 'sub' => $statusName];
             }
         }
         break;
@@ -66,8 +67,9 @@ switch ($module) {
         $rows = $harvestModel->all([], ['limit' => 100]);
         foreach ($rows as $r) {
             $label = $r['harvest_id'] . ' — ' . ($r['planting']['farm']['farm_name'] ?? '?') . ' / ' . ($r['planting']['crop']['crop_name'] ?? '?');
-            if (stripos($label, $query) !== false || stripos($r['quality_grade'] ?? '', $query) !== false) {
-                $results[] = ['id' => $r['harvest_id'], 'label' => $label, 'sub' => $r['quality_grade'] ?? ''];
+            $gradeName = $r['quality_grade']['grade_name'] ?? '';
+            if (stripos($label, $query) !== false || stripos($gradeName, $query) !== false) {
+                $results[] = ['id' => $r['harvest_id'], 'label' => $label, 'sub' => $gradeName];
             }
         }
         break;

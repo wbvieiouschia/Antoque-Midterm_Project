@@ -4,31 +4,61 @@
 
 ### FARMER
 - **farmer_id** (PK, IDENTITY)
-- first_name, last_name, contact_number, address, date_registered, created_at, updated_at
+- first_name, last_name, contact_number, address, date_registered, created_at, updated_at, created_by, updated_by
 
 ### FARM
 - **farm_id** (PK, IDENTITY)
 - **farmer_id** (FK → FARMER.farmer_id)
-- farm_name, location, area_hectares, soil_type, irrigation_type, created_at, updated_at
+- **soil_type_id** (FK → SOIL_TYPE.soil_type_id)
+- **irrigation_type_id** (FK → IRRIGATION_TYPE.irrigation_type_id)
+- farm_name, location, area_hectares, created_at, updated_at, created_by, updated_by
 
 ### CROP
 - **crop_id** (PK, IDENTITY)
-- crop_name, variety, crop_category, growing_period_days, recommended_season
+- **crop_category_id** (FK → CROP_CATEGORY.crop_category_id)
+- **season_id** (FK → SEASON.season_id)
+- crop_name, variety, growing_period_days, created_at, updated_at, created_by, updated_by
 
 ### PLANTING
 - **planting_id** (PK, IDENTITY)
 - **farm_id** (FK → FARM.farm_id)
 - **crop_id** (FK → CROP.crop_id)
-- planting_date, area_planted, seed_quantity, expected_harvest_date, status, created_at, updated_at
+- **planting_status_id** (FK → PLANTING_STATUS.planting_status_id)
+- planting_date, area_planted, seed_quantity, expected_harvest_date, created_at, updated_at, created_by, updated_by
 
 ### HARVEST
 - **harvest_id** (PK, IDENTITY)
 - **planting_id** (FK → PLANTING.planting_id)
-- harvest_date, quantity_kg, selling_price_per_kg, quality_grade, remark_id (FK → HARVEST_REMARKS.remark_id), remarks, created_at, updated_at
+- **quality_grade_id** (FK → QUALITY_GRADE.quality_grade_id)
+- harvest_date, quantity_kg, selling_price_per_kg, remark_id (FK → HARVEST_REMARKS.remark_id), remarks, created_at, updated_at, created_by, updated_by
 
 ### HARVEST_REMARKS (lookup)
 - **remark_id** (PK)
 - remark_description
+
+### SOIL_TYPE (lookup)
+- **soil_type_id** (PK, IDENTITY)
+- soil_type_name (UNIQUE)
+
+### IRRIGATION_TYPE (lookup)
+- **irrigation_type_id** (PK, IDENTITY)
+- irrigation_type_name (UNIQUE)
+
+### CROP_CATEGORY (lookup)
+- **crop_category_id** (PK, IDENTITY)
+- category_name (UNIQUE)
+
+### SEASON (lookup)
+- **season_id** (PK, IDENTITY)
+- season_name (UNIQUE)
+
+### PLANTING_STATUS (lookup)
+- **planting_status_id** (PK, IDENTITY)
+- status_name (UNIQUE)
+
+### QUALITY_GRADE (lookup)
+- **quality_grade_id** (PK, IDENTITY)
+- grade_name (UNIQUE)
 
 ### APP_USER (authentication)
 - **user_id** (PK, IDENTITY)
