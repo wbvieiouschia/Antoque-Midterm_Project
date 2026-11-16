@@ -17,6 +17,8 @@ $pageTitle = 'Reports';
 $reportType = $_GET['report'] ?? 'farmers_farms';
 $dateFrom = $_GET['date_from'] ?? '';
 $dateTo = $_GET['date_to'] ?? '';
+$sort = $_GET['sort'] ?? '';
+$dir = ($_GET['dir'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
 
 // Fetch data based on report type
 $reportData = [];
@@ -66,6 +68,72 @@ switch ($reportType) {
         $reportData['harvests'] = $harvests;
         break;
 }
+
+// Apply sorting
+$sortDir = $dir === 'desc' ? -1 : 1;
+if ($reportType === 'farmers_farms' && isset($reportData['farmers'])) {
+    usort($reportData['farmers'], function ($a, $b) use ($sort, $sortDir) {
+        if ($sort === 'name') {
+            $va = $a['first_name'] . ' ' . $a['last_name'];
+            $vb = $b['first_name'] . ' ' . $b['last_name'];
+        } elseif ($sort === 'date') {
+            $va = $a['date_registered'] ?? '';
+            $vb = $b['date_registered'] ?? '';
+        } else {
+            return 0;
+        }
+        return $sortDir * strcmp((string) $va, (string) $vb);
+    });
+}
+if (in_array($reportType, ['crops_per_farm', 'planting_status'], true) && isset($reportData['plantings'])) {
+    usort($reportData['plantings'], function ($a, $b) use ($sort, $sortDir) {
+        if ($sort === 'date') {
+            $va = $a['planting_date'] ?? '';
+            $vb = $b['planting_date'] ?? '';
+        } elseif ($sort === 'status') {
+            $va = $a['planting_status']['status_name'] ?? '';
+            $vb = $b['planting_status']['status_name'] ?? '';
+        } elseif ($sort === 'farm') {
+            $va = $a['farm']['farm_name'] ?? '';
+            $vb = $b['farm']['farm_name'] ?? '';
+        } elseif ($sort === 'crop') {
+            $va = $a['crop']['crop_name'] ?? '';
+            $vb = $b['crop']['crop_name'] ?? '';
+        } else {
+            return 0;
+        }
+        if (in_array($sort, ['date'], true)) {
+            return $sortDir * strcmp((string) $va, (string) $vb);
+        }
+        return $sortDir * strcmp((string) $va, (string) $vb);
+    });
+}
+if (in_array($reportType, ['harvest_records', 'total_harvested', 'harvest_value'], true) && isset($reportData['harvests'])) {
+    usort($reportData['harvests'], function ($a, $b) use ($sort, $sortDir) {
+        if ($sort === 'date') {
+            $va = $a['harvest_date'] ?? '';
+            $vb = $b['harvest_date'] ?? '';
+        } elseif ($sort === 'quantity') {
+            $va = (float) ($a['quantity_kg'] ?? 0);
+            $vb = (float) ($b['quantity_kg'] ?? 0);
+            return $sortDir * ($va <=> $vb);
+        } elseif ($sort === 'price') {
+            $va = (float) ($a['selling_price_per_kg'] ?? 0);
+            $vb = (float) ($b['selling_price_per_kg'] ?? 0);
+            return $sortDir * ($va <=> $vb);
+        } elseif ($sort === 'grade') {
+            $va = $a['quality_grade']['grade_name'] ?? '';
+            $vb = $b['quality_grade']['grade_name'] ?? '';
+        } elseif ($sort === 'value') {
+            $va = (float) ($a['quantity_kg'] ?? 0) * (float) ($a['selling_price_per_kg'] ?? 0);
+            $vb = (float) ($b['quantity_kg'] ?? 0) * (float) ($b['selling_price_per_kg'] ?? 0);
+            return $sortDir * ($va <=> $vb);
+        } else {
+            return 0;
+        }
+        return $sortDir * strcmp((string) $va, (string) $vb);
+    });
+}
 ?>
 <h1 class="text-2xl font-bold text-gray-800 mb-6 fade-in">Reports</h1>
 
@@ -93,6 +161,31 @@ switch ($reportType) {
                 <option value="harvest_value"<?php echo $reportType === 'harvest_value'
                     ? ' selected'
                     : ''; ?>>Estimated Harvest Value</option>
+            </select>
+        </div>
+        <div class="w-full md:w-1/4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+            <select name="sort" onchange="this.form.submit()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                <option value="">Default</option>
+                <?php
+                $sortOptions = [];
+                if ($reportType === 'farmers_farms') {
+                    $sortOptions = ['name' => 'Name', 'date' => 'Date Registered'];
+                } elseif (in_array($reportType, ['crops_per_farm', 'planting_status'], true)) {
+                    $sortOptions = ['date' => 'Planting Date', 'status' => 'Status', 'farm' => 'Farm', 'crop' => 'Crop'];
+                } elseif (in_array($reportType, ['harvest_records', 'total_harvested', 'harvest_value'], true)) {
+                    $sortOptions = ['date' => 'Harvest Date', 'quantity' => 'Quantity', 'price' => 'Price/kg', 'grade' => 'Grade', 'value' => 'Value'];
+                }
+                foreach ($sortOptions as $val => $label): ?>
+                    <option value="<?php echo e($val); ?>"<?php echo $sort === $val ? ' selected' : ''; ?>><?php echo e($label); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="w-full md:w-1/4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Order</label>
+            <select name="dir" onchange="this.form.submit()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                <option value="asc"<?php echo $dir === 'asc' ? ' selected' : ''; ?>>Ascending</option>
+                <option value="desc"<?php echo $dir === 'desc' ? ' selected' : ''; ?>>Descending</option>
             </select>
         </div>
         <div class="w-full md:w-1/4">
