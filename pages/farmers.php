@@ -43,7 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'create') {
-        $farmerModel->create($data);
+        $result = $farmerModel->create($data);
+        if (empty($result)) {
+            flash('error', 'Could not create farmer. Please check your inputs.');
+            header('Location: /pages/farmers.php?action=create');
+            exit();
+        }
         flash('success', 'Farmer created successfully.');
         header('Location: /pages/farmers.php');
         exit();

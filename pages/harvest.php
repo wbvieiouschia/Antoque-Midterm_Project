@@ -23,6 +23,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = [];
     if (!$data['planting_id']) {
         $errors[] = 'Planting record is required.';
+    } elseif (empty($db->find('planting', $data['planting_id'], 'planting_id'))) {
+        $errors[] = 'Selected planting record does not exist.';
+    }
+    if (!$data['quality_grade_id']) {
+        $errors[] = 'Quality grade is required.';
+    } elseif (empty($db->select('quality_grade', 'quality_grade_id', ['quality_grade_id=eq.' . $data['quality_grade_id']]))) {
+        $errors[] = 'Selected quality grade does not exist.';
+    }
+    if ($data['remark_id'] !== null && !empty($data['remark_id']) && empty($db->find('harvest_remarks', $data['remark_id'], 'remark_id'))) {
+        $errors[] = 'Selected remark does not exist.';
     }
     if (!$data['harvest_date'] || !DateTime::createFromFormat('Y-m-d', $data['harvest_date'])) {
         $errors[] = 'Valid harvest date is required.';
@@ -33,16 +43,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!is_numeric($data['selling_price_per_kg']) || $data['selling_price_per_kg'] < 0) {
         $errors[] = 'Selling price must be valid.';
     }
-    if (!$data['quality_grade_id']) {
-        $errors[] = 'Quality grade is required.';
-    }
     if ($errors) {
         flash('error', implode(' ', $errors));
         header('Location: /pages/harvest.php' . ($action === 'edit' ? '?action=edit&id=' . $id : '?action=create'));
         exit();
     }
     if ($action === 'create') {
-        $harvestModel->create($data);
+        $result = $harvestModel->create($data);
+        if (empty($result)) {
+            flash('error', 'Could not create harvest record. Please check your inputs.');
+            header('Location: /pages/harvest.php?action=create');
+            exit();
+        }
         flash('success', 'Harvest record created.');
         header('Location: /pages/harvest.php');
         exit();

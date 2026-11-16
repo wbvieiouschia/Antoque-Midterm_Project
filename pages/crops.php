@@ -27,12 +27,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (!$data['crop_category_id']) {
         $errors[] = 'Category is required.';
+    } elseif (empty($db->select('crop_category', 'crop_category_id', ['crop_category_id=eq.' . $data['crop_category_id']]))) {
+        $errors[] = 'Selected category does not exist.';
     }
     if (!$data['growing_period_days']) {
         $errors[] = 'Growing period (days) is required.';
     }
     if (!$data['season_id']) {
         $errors[] = 'Recommended season is required.';
+    } elseif (empty($db->select('season', 'season_id', ['season_id=eq.' . $data['season_id']]))) {
+        $errors[] = 'Selected season does not exist.';
     }
     if ($errors) {
         flash('error', implode(' ', $errors));
@@ -40,7 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     if ($action === 'create') {
-        $cropModel->create($data);
+        $result = $cropModel->create($data);
+        if (empty($result)) {
+            flash('error', 'Could not create crop. Please check your inputs.');
+            header('Location: /pages/crops.php?action=create');
+            exit();
+        }
         flash('success', 'Crop created.');
         header('Location: /pages/crops.php');
         exit();

@@ -24,6 +24,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = [];
     if (!$data['farmer_id']) {
         $errors[] = 'Farmer is required.';
+    } elseif (empty($db->find('farmer', $data['farmer_id'], 'farmer_id'))) {
+        $errors[] = 'Selected farmer does not exist.';
+    }
+    if (!$data['soil_type_id']) {
+        $errors[] = 'Soil type is required.';
+    } elseif (empty($db->select('soil_type', 'soil_type_id', ['soil_type_id=eq.' . $data['soil_type_id']]))) {
+        $errors[] = 'Selected soil type does not exist.';
+    }
+    if (!$data['irrigation_type_id']) {
+        $errors[] = 'Irrigation type is required.';
+    } elseif (empty($db->select('irrigation_type', 'irrigation_type_id', ['irrigation_type_id=eq.' . $data['irrigation_type_id']]))) {
+        $errors[] = 'Selected irrigation type does not exist.';
     }
     if (empty($data['farm_name'])) {
         $errors[] = 'Farm name is required.';
@@ -34,19 +46,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!is_numeric($data['area_hectares']) || $data['area_hectares'] <= 0) {
         $errors[] = 'Area must be a positive number.';
     }
-    if (!$data['soil_type_id']) {
-        $errors[] = 'Soil type is required.';
-    }
-    if (!$data['irrigation_type_id']) {
-        $errors[] = 'Irrigation type is required.';
-    }
     if ($errors) {
         flash('error', implode(' ', $errors));
         header('Location: /pages/farms.php' . ($action === 'edit' ? '?action=edit&id=' . $id : '?action=create'));
         exit();
     }
     if ($action === 'create') {
-        $farmModel->create($data);
+        $result = $farmModel->create($data);
+        if (empty($result)) {
+            flash('error', 'Could not create farm. Please check your inputs.');
+            header('Location: /pages/farms.php?action=create');
+            exit();
+        }
         flash('success', 'Farm created.');
         header('Location: /pages/farms.php');
         exit();

@@ -101,5 +101,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <code>staff@example.com</code> / <code>staff123</code>
         </p>
     </main>
+    <script>
+        (function () {
+            var form = document.querySelector('form');
+            if (!form) return;
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                try {
+                    var res = await fetch(window.location.href, { method: 'POST', body: new FormData(form) });
+                    if (res.url && res.url.indexOf('index.php') !== -1) {
+                        window.location.replace('index.php');
+                    } else {
+                        form.submit();
+                    }
+                } catch (err) {
+                    form.submit();
+                }
+            });
+        })();
+    </script>
 </body>
 </html>

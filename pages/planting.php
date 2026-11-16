@@ -24,9 +24,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = [];
     if (!$data['farm_id']) {
         $errors[] = 'Farm is required.';
+    } elseif (empty($db->find('farm', $data['farm_id'], 'farm_id'))) {
+        $errors[] = 'Selected farm does not exist.';
     }
     if (!$data['crop_id']) {
         $errors[] = 'Crop is required.';
+    } elseif (empty($db->find('crop', $data['crop_id'], 'crop_id'))) {
+        $errors[] = 'Selected crop does not exist.';
+    }
+    if (!$data['planting_status_id']) {
+        $errors[] = 'Status is required.';
+    } elseif (empty($db->select('planting_status', 'planting_status_id', ['planting_status_id=eq.' . $data['planting_status_id']]))) {
+        $errors[] = 'Selected status does not exist.';
     }
     if (!$data['planting_date'] || !DateTime::createFromFormat('Y-m-d', $data['planting_date'])) {
         $errors[] = 'Valid planting date is required.';
@@ -49,7 +58,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     if ($action === 'create') {
-        $plantingModel->create($data);
+        $result = $plantingModel->create($data);
+        if (empty($result)) {
+            flash('error', 'Could not create planting record. Please check your inputs.');
+            header('Location: /pages/planting.php?action=create');
+            exit();
+        }
         flash('success', 'Planting record created.');
         header('Location: /pages/planting.php');
         exit();
