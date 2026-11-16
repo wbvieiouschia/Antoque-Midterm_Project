@@ -107,12 +107,13 @@ switch ($reportType) {
                 $dateTo,
             ); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
         </div>
-        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">Generate</button>
+        <input type="hidden" name="download" value="1">
+        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">Generate PDF</button>
     </form>
 </div>
 
 <!-- Report output -->
-<div class="bg-white rounded-lg border border-gray-200 overflow-hidden fade-in">
+<div id="reportOutput" class="bg-white rounded-lg border border-gray-200 overflow-hidden fade-in">
     <?php if ($reportType === 'farmers_farms'): ?>
         <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-800">Farmers and Their Farms</h3></div>
         <div class="overflow-x-auto">
@@ -273,4 +274,25 @@ switch ($reportType) {
     <?php endif; ?>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+(function () {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('download') !== '1') return;
+    var el = document.getElementById('reportOutput');
+    if (!el || typeof html2pdf === 'undefined') return;
+    html2pdf().set({
+        margin: 10,
+        filename: 'report.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(el).save().then(function () {
+        // remove download flag from URL to avoid repeated downloads
+        params.delete('download');
+        var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+        window.history.replaceState({}, '', newUrl);
+    });
+})();
+</script>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
