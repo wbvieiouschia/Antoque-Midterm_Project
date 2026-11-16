@@ -74,7 +74,7 @@ switch ($reportType) {
     <form method="GET" class="flex flex-col md:flex-row gap-4 items-end">
         <div class="w-full md:w-1/3">
             <label class="block text-sm font-medium text-gray-700 mb-1">Report Type</label>
-            <select name="report" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+            <select name="report" onchange="this.form.submit()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
                 <option value="farmers_farms"<?php echo $reportType === 'farmers_farms'
                     ? ' selected'
                     : ''; ?>>Farmers and Their Farms</option>
@@ -107,8 +107,8 @@ switch ($reportType) {
                 $dateTo,
             ); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
         </div>
-        <input type="hidden" name="download" value="1">
-        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">Generate PDF</button>
+        <input type="hidden" name="download" id="downloadFlag" value="0">
+        <button type="submit" onclick="document.getElementById('downloadFlag').value='1';" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">Generate PDF</button>
     </form>
 </div>
 
