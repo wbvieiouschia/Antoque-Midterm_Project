@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 try {
                     var res = await fetch(window.location.href, { method: 'POST', body: new FormData(form) });
                     if (res.url && res.url.indexOf('index.php') !== -1) {
-                        window.location.replace('index.php');
+                        window.location.href = 'index.php';
                     } else {
                         form.submit();
                     }
