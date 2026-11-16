@@ -2,10 +2,8 @@
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/auth.php';
 
-if (isLoggedIn()) {
-    header('Location: index.php');
-    exit();
-}
+// Allow revisiting the login form (e.g., via the browser Back button)
+// without forcing a redirect to the dashboard.
 
 $error = '';
 $notice = getFlash('success');
