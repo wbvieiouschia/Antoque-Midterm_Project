@@ -6,11 +6,8 @@ require_once __DIR__ . '/../includes/crud.php';
 requireAdmin();
 
 $db = new Database();
-$farmerModel = new Farmer($db);
-$farmModel = new Farm($db);
+$reportModel = new Report($db);
 $cropModel = new Crop($db);
-$plantingModel = new Planting($db);
-$harvestModel = new Harvest($db);
 $pageTitle = 'Reports';
 
 // Report filters
@@ -31,13 +28,9 @@ switch ($reportType) {
         if ($dateTo !== '') {
             $filters[] = 'date_registered=lte.' . $dateTo;
         }
-        $farmers = $farmerModel->all($filters);
-        $reportData['farmers'] = $farmers;
-        // Group farms by farmer (the farmer query does not include farms)
-        $reportData['farmsByFarmer'] = [];
-        foreach ($farmModel->all([], ['limit' => 1000]) as $fm) {
-            $reportData['farmsByFarmer'][$fm['farmer_id']][] = $fm;
-        }
+        $data = $reportModel->farmersAndFarms($filters);
+        $reportData['farmers'] = $data['farmers'];
+        $reportData['farmsByFarmer'] = $data['farmsByFarmer'];
         break;
     case 'crops_per_farm':
     case 'planting_status':
@@ -48,8 +41,7 @@ switch ($reportType) {
         if ($dateTo !== '') {
             $filters[] = 'planting_date=lte.' . $dateTo;
         }
-        $plantings = $plantingModel->all($filters, ['limit' => 500]);
-        $reportData['plantings'] = $plantings;
+        $reportData['plantings'] = $reportModel->plantings($filters, ['limit' => 500]);
         break;
     case 'harvest_records':
     case 'total_harvested':
@@ -61,11 +53,10 @@ switch ($reportType) {
         if ($dateTo !== '') {
             $filters[] = 'harvest_date=lte.' . $dateTo;
         }
-        $harvests = $harvestModel->all(
+        $reportData['harvests'] = $reportModel->harvests(
             $filters,
             ['limit' => 500],
         );
-        $reportData['harvests'] = $harvests;
         break;
 }
 
