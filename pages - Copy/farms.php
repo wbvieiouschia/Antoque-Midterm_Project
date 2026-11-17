@@ -21,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'soil_type_id' => (int) ($_POST['soil_type_id'] ?? 0),
         'irrigation_type_id' => (int) ($_POST['irrigation_type_id'] ?? 0),
     ];
+
+
     $errors = [];
     if (!$data['farmer_id']) {
         $errors[] = 'Farmer is required.';

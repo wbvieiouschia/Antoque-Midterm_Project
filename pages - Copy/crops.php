@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'growing_period_days' => (int) ($_POST['growing_period_days'] ?? 0),
         'season_id' => (int) ($_POST['season_id'] ?? 0),
     ];
+
     $errors = [];
     if (empty($data['crop_name'])) {
         $errors[] = 'Crop name is required.';
