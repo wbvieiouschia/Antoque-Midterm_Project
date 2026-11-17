@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/Database.php';
+require_once __DIR__ . '/models.php';
 
 session_start();
 
@@ -68,16 +69,15 @@ function login(string $email, string $password): bool
     }
     try {
         $db = new Database();
-        $rows = $db->select('app_user', '*', ['email=eq.' . rawurlencode(strtolower(trim($email)))], ['limit' => 1]);
-        foreach ($rows as $u) {
-            if (strtolower($u['email']) === strtolower(trim($email)) && password_verify($password, $u['password_hash'])) {
-                $_SESSION['user_id'] = $u['user_id'];
-                $_SESSION['user_email'] = $u['email'];
-                $_SESSION['user_role'] = $u['role'];
-                $_SESSION['user_name'] = $u['full_name'];
-                $_SESSION['logged_in_at'] = time();
-                return true;
-            }
+        $userModel = new User($db);
+        $u = $userModel->findByEmail($email);
+        if ($u && strtolower($u['email']) === strtolower(trim($email)) && password_verify($password, $u['password_hash'])) {
+            $_SESSION['user_id'] = $u['user_id'];
+            $_SESSION['user_email'] = $u['email'];
+            $_SESSION['user_role'] = $u['role'];
+            $_SESSION['user_name'] = $u['full_name'];
+            $_SESSION['logged_in_at'] = time();
+            return true;
         }
     } catch (Throwable $e) {
         // The accounts table may not exist yet; fall through to a failed login
@@ -97,14 +97,15 @@ function emailExists(string $email): bool
         }
     }
     $db = new Database();
-    $rows = $db->select('app_user', 'user_id', ['email=eq.' . rawurlencode($email)], ['limit' => 1]);
-    return !empty($rows);
+    $userModel = new User($db);
+    return $userModel->emailExists($email);
 }
 
 function registerUser(string $name, string $email, string $password): void
 {
     $db = new Database();
-    $db->insert('app_user', [
+    $userModel = new User($db);
+    $userModel->create([
         'full_name' => $name,
         'email' => strtolower(trim($email)),
         'password_hash' => password_hash($password, PASSWORD_DEFAULT),
